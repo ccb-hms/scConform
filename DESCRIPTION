@@ -1,0 +1,28 @@
+Package: ConfCell
+Type: Package
+Title: Conformal Inference For Cell Type Annotation
+Version: 0.99.0
+Authors@R: person("Corbetta", "Daniela", email = "daniela.corbetta@phd.unipd.it", role = c("aut", "cre"))
+Maintainer: Daniela Corbetta <daniela.corbetta@phd.unipd.it>
+Description: Builds prediction interval for cell type annotation using conformal inference and conformal risk control.
+    It provides two main methods. The first one gives prediction intervals with coverage guarantees based 
+    on standard conformal inference. The second one instead gives hierarchical prediction intervals that are consistent
+    with the cell ontology.
+License: Artistic-2.0
+LazyData: true
+Depends:
+    R (>= 4.2.0),
+    SingleCellExperiment,
+Suggests:
+    scRNAseq,
+    knitr,
+    Matrix,
+    rmarkdown,
+    BiocStyle
+Imports:
+VignetteBuilder: knitr
+RoxygenNote: 7.3.1
+Encoding: UTF-8
+biocViews: 
+    SingleCell,
+    Annotation
