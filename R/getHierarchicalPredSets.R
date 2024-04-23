@@ -18,6 +18,8 @@
 #' Each element of the list contains the prediction set for that cell.
 #' @references For reference on conformal risk control, see
 #' Angelopoulos, Anastasios N., et al. "Conformal risk control." arXiv preprint arXiv:2208.02814 (2022).
+#' @importFrom foreach %dopar%
+#' @export
 
 
 getHierarchicalPredSets <- function(p.cal, p.test, y.cal, onto, alpha, lambdas){

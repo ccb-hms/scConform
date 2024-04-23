@@ -16,6 +16,7 @@
 #' Each element of the list contains the prediction set for that cell.
 #' @references For reference on split conformal prediction, refer to section 1 of
 #' Angelopoulos, Anastasios N., and Stephen Bates. "A gentle introduction to conformal prediction and distribution-free uncertainty quantification." arXiv preprint arXiv:2107.07511 (2021).
+#' @export
 
 getConformalPredSets <- function(p.cal, p.test, y.cal, alpha){
   # Get calibration scores (1-predicted probability for the true class)
