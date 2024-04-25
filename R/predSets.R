@@ -6,7 +6,7 @@
 #' @author Daniela Corbetta
 #' @return vector with names of the selected leaf nodes
 
-.pred_sets <- function(lambda, pred, onto){
+.predSets <- function(lambda, pred, onto){
   # Get the predicted class and its ancestors
   pred_class <- names(pred)[which.max(pred)]
   anc <- .ancestors(node = pred_class, onto = onto, include_self = TRUE)
