@@ -19,7 +19,8 @@ Suggests:
     rmarkdown
 Imports:
     foreach,
-    igraph
+    igraph,
+    stats
 VignetteBuilder: knitr
 RoxygenNote: 7.3.1
 Encoding: UTF-8

@@ -20,35 +20,34 @@
 #' Angelopoulos, Anastasios N., et al. "Conformal risk control." arXiv preprint arXiv:2208.02814 (2022).
 #' @importFrom foreach %dopar%
 #' @importFrom foreach foreach
-#' @export
 
 
-getHierarchicalPredSets <- function(p.cal, p.test, y.cal, onto, alpha, lambdas){
-  y.cal <- as.character(y.cal)
-  # Get prediction sets for each value of lambda for all the calibration data
-  j <- NULL
-  sets <- foreach(j = lambdas) %dopar% {
-            lapply(1:nrow(p.cal),
-              function(i) .predSets(lambda=j, pred=p.cal[i, ], onto=onto))
-    }
+.getHierarchicalPredSets <- function(p.cal, p.test, y.cal, onto, alpha, lambdas){
+    y.cal <- as.character(y.cal)
+    # Get prediction sets for each value of lambda for all the calibration data
+    j <- NULL
+    sets <- foreach(j = lambdas) %dopar% {
+              lapply(1:nrow(p.cal),
+                function(i) .predSets(lambda=j, pred=p.cal[i, ], onto=onto))
+      }
 
-  # Get the loss table (ncal x length(lambda) table with TRUE\FALSE)
-  loss <- sapply(1:length(lambdas), function(lambda) {
-    sapply(seq_along(y.cal), function(i) {
-      !(y.cal[i] %in% sets[[lambda]][[i]])
+    # Get the loss table (ncal x length(lambda) table with TRUE\FALSE)
+    loss <- sapply(1:length(lambdas), function(lambda) {
+      sapply(seq_along(y.cal), function(i) {
+        !(y.cal[i] %in% sets[[lambda]][[i]])
+      })
     })
-  })
 
-  # Get lhat
-  n <- nrow(loss)
-  rhat <- colMeans(loss)
-  lhat_idx <- min(which(((n/(n+1)) * rhat + 1/(n+1) ) <= alpha))
-  lhat <- lambdas[lhat_idx]
+    # Get lhat
+    n <- nrow(loss)
+    rhat <- colMeans(loss)
+    lhat_idx <- min(which(((n/(n+1)) * rhat + 1/(n+1) ) <= alpha))
+    lhat <- lambdas[lhat_idx]
 
-  # Get prediction sets for test data
-  sets.test <- apply(p.test, 1, function(x) .predSets(lambda=lhat, pred=x, onto=onto))
+    # Get prediction sets for test data
+    sets.test <- apply(p.test, 1, function(x) .predSets(lambda=lhat, pred=x, onto=onto))
 
-  return(sets.test)
+    return(sets.test)
 }
 
 

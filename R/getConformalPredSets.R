@@ -17,23 +17,22 @@
 #' @importFrom stats quantile
 #' @references For reference on split conformal prediction, refer to section 1 of
 #' Angelopoulos, Anastasios N., and Stephen Bates. "A gentle introduction to conformal prediction and distribution-free uncertainty quantification." arXiv preprint arXiv:2107.07511 (2021).
-#' @export
 
-getConformalPredSets <- function(p.cal, p.test, y.cal, alpha){
-  # Get calibration scores (1-predicted probability for the true class)
-  s <- 1 - apply(p.cal, 1, function(row) row[y.cal])
+.getConformalPredSets <- function(p.cal, p.test, y.cal, alpha){
+    # Get calibration scores (1-predicted probability for the true class)
+    s <- 1 - apply(p.cal, 1, function(row) row[y.cal])
 
-  # Get adjusted quantile
-  n <- nrow(p.cal)
-  q_level <- ceiling((n+1)*(1-alpha))/n
-  qhat <- quantile(s, q_level)
+    # Get adjusted quantile
+    n <- nrow(p.cal)
+    q_level <- ceiling((n+1)*(1-alpha))/n
+    qhat <- quantile(s, q_level)
 
-  # Get prediction sets
-  prediction_sets <- p.test >= 1-qhat
-  pr.list <- lapply(1:nrow(prediction_sets), function(i) {
-    colnames(prediction_sets)[prediction_sets[i, ]]
-  })
-  return(pr.list)
+    # Get prediction sets
+    prediction_sets <- p.test >= 1-qhat
+    pr.list <- lapply(1:nrow(prediction_sets), function(i) {
+        colnames(prediction_sets)[prediction_sets[i, ]]
+    })
+    return(pr.list)
 }
 
 

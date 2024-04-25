@@ -9,8 +9,8 @@
 #' @importFrom igraph distances
 
 .ancestors <- function(node, onto, include_self=TRUE){
-  if(include_self)
-    return(V(onto)$name[is.finite(distances(onto, node, mode="in"))])
-  else
-    return(V(onto)$name[is.finite(distances(onto, node, mode="in")) & V(onto)$name!=node])
+    if(include_self)
+      return(V(onto)$name[is.finite(distances(onto, node, mode="in"))])
+    else
+      return(V(onto)$name[is.finite(distances(onto, node, mode="in")) & V(onto)$name!=node])
 }
