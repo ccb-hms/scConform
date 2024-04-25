@@ -1,8 +1,8 @@
 #' @title Get hierarchical prediction sets exploiting the cell ontology
 #' @description Let K be the total number of distinct cell type labels and n, m
 #' the number of cells in the calibration and in the test data, respectively.
-#' This function takes as input two matrices: a matrix \code{n \times K} and
-#' a matrix \code{m \times K} with the estimated
+#' This function takes as input two matrices: a matrix \code{n x K} and
+#' a matrix \code{m x K} with the estimated
 #' probabilities for each cell in the calibration and in the test data, respectively.
 #' It returns a list with the prediction sets for each cell in the test data.
 #'
@@ -26,7 +26,7 @@ getHierarchicalPredSets <- function(p.cal, p.test, y.cal, onto, alpha, lambdas){
   # Get prediction sets for each value of lambda for all the calibration data
   sets <- foreach(lambda = lambdas) %dopar% {
             lapply(1:nrow(p.cal),
-              function(i) .pred_sets(lambda=lambda, pred=p.cal[i, ], onto=onto))}
+              function(i) .predSets(lambda=lambda, pred=p.cal[i, ], onto=onto))}
 
   # Get the loss table (ncal x length(lambda) table with TRUE\FALSE)
   loss <- sapply(1:length(lambdas), function(lambda) {
@@ -42,7 +42,7 @@ getHierarchicalPredSets <- function(p.cal, p.test, y.cal, onto, alpha, lambdas){
   lhat <- lambdas[lhat_idx]
 
   # Get prediction sets for test data
-  sets.test <- apply(p.test, 1, function(x) .pred_sets(lambda=lhat, pred=x, onto=onto))
+  sets.test <- apply(p.test, 1, function(x) .predSets(lambda=lhat, pred=x, onto=onto))
 
   return(sets.test)
 }
