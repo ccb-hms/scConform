@@ -11,15 +11,15 @@ Description: Builds prediction interval for cell type annotation using conformal
 License: Artistic-2.0
 LazyData: true
 Depends:
-    R (>= 4.2.0),
-    SingleCellExperiment,
+    R (>= 4.2.0)
 Suggests:
     scRNAseq,
     knitr,
     Matrix,
-    rmarkdown,
-    BiocStyle
+    rmarkdown
 Imports:
+    foreach,
+    igraph
 VignetteBuilder: knitr
 RoxygenNote: 7.3.1
 Encoding: UTF-8

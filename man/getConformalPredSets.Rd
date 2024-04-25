@@ -23,8 +23,8 @@ Each element of the list contains the prediction set for that cell.
 \description{
 Let K be the total number of distinct cell type labels and n, m
 the number of cells in the calibration and in the test data, respectively.
-This function takes as input two matrices: a matrix \code{n \times K} and
-a matrix \code{m \times K} with the estimated
+This function takes as input two matrices: a matrix \code{n x K} and
+a matrix \code{m x K} with the estimated
 probabilities for each cell in the calibration and in the test data, respectively.
 It returns a list with the prediction sets for each cell in the test data.
 }

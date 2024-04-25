@@ -12,26 +12,30 @@
 #' @param y.cal a vector of length n with the labels of the cells in the calibration data
 #' @param onto the considered section of the cell ontology
 #' @param alpha a number between 0 and 1 that indicates the allowed miscoverage
-#' @param lambda a vector of possible lambda values to be considered
+#' @param lambdas a vector of possible lambda values to be considered
 #' @author Daniela Corbetta
 #' @return The function \code{getHierarchicalPredSets} returns a list of length equal to the number of cells in the test data.
 #' Each element of the list contains the prediction set for that cell.
 #' @references For reference on conformal risk control, see
 #' Angelopoulos, Anastasios N., et al. "Conformal risk control." arXiv preprint arXiv:2208.02814 (2022).
 #' @importFrom foreach %dopar%
+#' @importFrom foreach foreach
 #' @export
 
 
 getHierarchicalPredSets <- function(p.cal, p.test, y.cal, onto, alpha, lambdas){
+  y.cal <- as.character(y.cal)
   # Get prediction sets for each value of lambda for all the calibration data
-  sets <- foreach(lambda = lambdas) %dopar% {
+  j <- NULL
+  sets <- foreach(j = lambdas) %dopar% {
             lapply(1:nrow(p.cal),
-              function(i) .predSets(lambda=lambda, pred=p.cal[i, ], onto=onto))}
+              function(i) .predSets(lambda=j, pred=p.cal[i, ], onto=onto))
+    }
 
   # Get the loss table (ncal x length(lambda) table with TRUE\FALSE)
   loss <- sapply(1:length(lambdas), function(lambda) {
     sapply(seq_along(y.cal), function(i) {
-      !(y.cal[i] %in% prediction[[lambda]][[i]])
+      !(y.cal[i] %in% sets[[lambda]][[i]])
     })
   })
 

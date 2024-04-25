@@ -3,6 +3,8 @@
 export(getConformalPredSets)
 export(getHierarchicalPredSets)
 importFrom(foreach,"%dopar%")
+importFrom(foreach,foreach)
 importFrom(igraph,V)
 importFrom(igraph,degree)
 importFrom(igraph,distances)
+importFrom(stats,quantile)

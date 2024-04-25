@@ -20,8 +20,8 @@
   # Select the most external node (i.e. the one with smallest score)
   sel_node <- names(sel_scores)[length(sel_scores)]
   # Add also the subgraphs we would have obtained with smaller lambda
-  selected <- c(lapply(anc[round(scores, 15) <= lambda], function(x) children(node = x, onto = onto)),
-                list(children(sel_node, onto)))
+  selected <- c(lapply(anc[round(scores, 15) <= lambda], function(x) .children(node = x, onto = onto)),
+                list(.children(sel_node, onto)))
 
   return(Reduce(union, selected))
 }

@@ -1,8 +1,8 @@
 #' @title Get prediction sets with split conformal inference
 #' @description Let K be the total number of distinct cell type labels and n, m
 #' the number of cells in the calibration and in the test data, respectively.
-#' This function takes as input two matrices: a matrix \code{n \times K} and
-#' a matrix \code{m \times K} with the estimated
+#' This function takes as input two matrices: a matrix \code{n x K} and
+#' a matrix \code{m x K} with the estimated
 #' probabilities for each cell in the calibration and in the test data, respectively.
 #' It returns a list with the prediction sets for each cell in the test data.
 #'
@@ -14,6 +14,7 @@
 #' @author Daniela Corbetta
 #' @return The function \code{getConformalPredSets} returns a list of length equal to the number of cells in the test data.
 #' Each element of the list contains the prediction set for that cell.
+#' @importFrom stats quantile
 #' @references For reference on split conformal prediction, refer to section 1 of
 #' Angelopoulos, Anastasios N., and Stephen Bates. "A gentle introduction to conformal prediction and distribution-free uncertainty quantification." arXiv preprint arXiv:2107.07511 (2021).
 #' @export
@@ -25,7 +26,7 @@ getConformalPredSets <- function(p.cal, p.test, y.cal, alpha){
   # Get adjusted quantile
   n <- nrow(p.cal)
   q_level <- ceiling((n+1)*(1-alpha))/n
-  qhat <- quantile(s, q.level)
+  qhat <- quantile(s, q_level)
 
   # Get prediction sets
   prediction_sets <- p.test >= 1-qhat
