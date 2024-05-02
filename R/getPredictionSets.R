@@ -40,8 +40,10 @@
 getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
                               lambdas = lambdas <- seq(0.001,0.999,length.out=100),
                               follow_ontology=TRUE){
+
     # Add check to see if x.cal, x.query are SingleCell/SpatialExperiment or matrices
-    # Retrieve labels from the ontology
+    # Retrieve labels from the ontology (need to add retrieval from y.cal/data
+    # when follow_ontology=FALSE)
     labels <- V(onto)$name[degree(onto, mode="out")==0]
     K <- length(labels)
     if(!is.matrix(x.query)){
