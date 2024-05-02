@@ -10,24 +10,28 @@ getPredictionSets(
   y.cal,
   onto = NULL,
   alpha = 0.1,
-  lambdas = lambdas <- seq(0.001, 0.999, length.out = 100),
-  follow_ontology = TRUE
+  lambdas = seq(0.001, 0.999, length.out = 100),
+  follow_ontology = TRUE,
+  labels = NULL,
+  return.sc = NULL,
+  pr.name = "pred.set"
 )
 }
 \arguments{
-\item{x.query}{query data for which we want to build prediction sets. Could be either a
-SingleCellExperiment object with the estimated probabilities for each cell type
-in the colData, or a matrix of dimension \code{n x K}, where \code{n} is the number
-of cells and \code{K} is the number of different labels. The colnames of the matrix
-have to correspond to the cell labels.}
+\item{x.query}{query data for which we want to build prediction sets. Could
+be either a SingleCellExperiment object with the estimated probabilities for
+each cell type in the colData, or a matrix of dimension \code{n x K},
+where \code{n} is the number of cells and \code{K} is the number of different
+labels. The colnames of the matrix have to correspond to the cell labels.}
 
 \item{x.cal}{calibration data. Could be either a
-SingleCellExperiment object with the estimated probabilities for each cell type
-in the colData, or a named matrix of dimension \code{m x K}, where \code{m} is the number
-of cells and \code{K} is the number of different labels. The colnames of the matrix
-have to correspond to the cell labels.}
+SingleCellExperiment object with the estimated probabilities for each cell
+type in the colData, or a named matrix of dimension \code{m x K}, where
+\code{m} is the number of cells and \code{K} is the number of different
+labels. The colnames of the matrix have to correspond to the cell labels.}
 
-\item{y.cal}{a vector of length n with the labels of the cells in the calibration data}
+\item{y.cal}{a vector of length n with the labels of the cells in the
+calibration data}
 
 \item{onto}{the considered section of the cell ontology as an igraph object.}
 
@@ -38,26 +42,45 @@ have to correspond to the cell labels.}
 \item{follow_ontology}{If \code{TRUE}, then the function returns hierarchical
 prediction sets that follow the cell ontology structure. If \code{FALSE}, it
 returns classical conformal prediction sets.}
+
+\item{labels}{labels of different considered cell types. Necessary if
+\code{onto=NULL}, otherwise they are set to the leaf nodes of the provided
+graph}
+
+\item{return.sc}{if \code{TRUE}, the prediction sets are returned as a
+SingleCellExperiment. If \code{FALSE}, they are returned as list. By default,
+it is set to \code{TRUE} when \code{x.query} is a SingleCellExperiment or
+SpatialExperiment object, to \code{FALSE} when \code{x.query} is a matrix.}
+
+\item{pr.name}{name of the colData variable that will contain the prediction
+sets.}
 }
 \value{
-The function \code{getPredictionSets} returns a list of length equal
-to the number of cells in the test data.
-Each element of the list contains the prediction set for that cell.
+The function \code{getPredictionSets} returns
+\item{If \code{return.sc=TRUE}}{a SingleCellExperiment or SpatialExperiment
+object with the prediction sets in the colData. The name of the variable
+containing the prediction sets is given by the parameter \code{pr.name}}
+\item{If \code{return.sc=FALSE}}{a list of length equal
+to the number of cells in the test data. Each element of the list contains
+the prediction set for that cell.}
 }
 \description{
 Let K be the total number of distinct cell type labels and n, m
 the number of cells in the calibration and in the test data, respectively.
 This function takes as input two matrices: a matrix \code{n x K} and
 a matrix \code{m x K} with the estimated
-probabilities for each cell in the calibration and in the test data, respectively.
-It returns a list with the prediction sets for each cell in the test data.
+probabilities for each cell in the calibration and in the test data,
+respectively. It returns a list with the prediction sets for each cell in
+the test data.
 }
 \references{
 For an introduction to conformal prediction, see of
 Angelopoulos, Anastasios N., and Stephen Bates. "A gentle introduction to
-conformal prediction and distribution-free uncertainty quantification." arXiv preprint arXiv:2107.07511 (2021).
+conformal prediction and distribution-free uncertainty quantification."
+arXiv preprint arXiv:2107.07511 (2021).
 For reference on conformal risk control, see
-Angelopoulos, Anastasios N., et al. "Conformal risk control." arXiv preprint arXiv:2208.02814 (2022).
+Angelopoulos, Anastasios N., et al. "Conformal risk control."
+arXiv preprint arXiv:2208.02814 (2022).
 }
 \author{
 Daniela Corbetta
