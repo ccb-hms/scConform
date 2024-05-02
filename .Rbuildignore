@@ -1,2 +1,5 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^somegraphs\.R$
+^\.github$
+^old$

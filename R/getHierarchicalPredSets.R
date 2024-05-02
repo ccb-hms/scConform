@@ -21,12 +21,12 @@
 #' @importFrom foreach %dopar%
 #' @importFrom foreach foreach
 
-
 .getHierarchicalPredSets <- function(p.cal, p.test, y.cal, onto, alpha, lambdas){
     y.cal <- as.character(y.cal)
     # Get prediction sets for each value of lambda for all the calibration data
     j <- NULL
-    sets <- foreach(j = lambdas) %dopar% {
+    exportedFn = c(".predSets", ".scores", ".children", ".ancestors")
+    sets <- foreach(j = lambdas, .export=exportedFn) %dopar% {
               lapply(1:nrow(p.cal),
                 function(i) .predSets(lambda=j, pred=p.cal[i, ], onto=onto))
       }
@@ -44,10 +44,11 @@
     lhat_idx <- min(which(((n/(n+1)) * rhat + 1/(n+1) ) <= alpha))
     lhat <- lambdas[lhat_idx]
 
+
     # Get prediction sets for test data
     sets.test <- apply(p.test, 1, function(x) .predSets(lambda=lhat, pred=x, onto=onto))
 
-    return(sets.test)
+    return(list(sets.test=sets.test, lhat=lhat))
 }
 
 

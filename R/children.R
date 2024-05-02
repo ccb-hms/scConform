@@ -14,5 +14,5 @@
     if(leaf)
       return(V(onto)$name[is.finite(distances(onto, node, mode="out")) & degree(onto, mode="out")==0])
     else
-      return(V(onto)$name[is.finite(distances(onto, node, mode="out")) & V(onto)$name!=node])
+      return(V(onto)$name[is.finite(distances(onto, node, mode="out"))])
 }

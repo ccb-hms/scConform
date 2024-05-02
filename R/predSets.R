@@ -12,15 +12,23 @@
     anc <- .ancestors(node = pred_class, onto = onto, include_self = TRUE)
 
     # Compute scores for all the ancestor of the predicted class
-    scores <- sapply(as.character(anc), function(i) scores(pred=pred, int_node=i, onto=onto))
-    names(scores) <- anc
+    s <- sapply(as.character(anc), function(i) .scores(pred=pred, int_node=i, onto=onto))
+    names(s) <- anc
 
-    # Select nodes with scores higher than lambda
-    sel_scores <- scores[round(scores, 15) >= lambda]
-    # Select the most external node (i.e. the one with smallest score)
-    sel_node <- names(sel_scores)[length(sel_scores)]
+    # Sort them by score and if there are ties by distance to the predicted class
+    ## compute distance from predicted class
+    pos <- distances(onto, v=anc, to=pred_class, mode="out")
+    tie_breaker <- as.vector(t(pos))
+    names(tie_breaker) <- colnames(t(pos))
+    sorted_indices <- order(s, tie_breaker, decreasing=F)
+    sorted_scores <- s[sorted_indices]
+
+    # Select the first score that is geq than lambda
+    sel_node <- names(sorted_scores)[round(sorted_scores, 15) >= lambda][1]
+
+
     # Add also the subgraphs we would have obtained with smaller lambda
-    selected <- c(lapply(anc[round(scores, 15) <= lambda], function(x) .children(node = x, onto = onto)),
+    selected <- c(lapply(anc[round(s, 15) < lambda], function(x) .children(node = x, onto = onto)),
                   list(.children(sel_node, onto)))
 
     return(Reduce(union, selected))

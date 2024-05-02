@@ -20,7 +20,10 @@
 
 .getConformalPredSets <- function(p.cal, p.test, y.cal, alpha){
     # Get calibration scores (1-predicted probability for the true class)
-    s <- 1 - apply(p.cal, 1, function(row) row[y.cal])
+    true <- rep(NA, dim(p.cal)[1])
+    for (i in 1:dim(p.cal)[1])
+      true[i] <- p.cal[i, y.cal[i]]
+    s <- 1-true
 
     # Get adjusted quantile
     n <- nrow(p.cal)
