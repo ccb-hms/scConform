@@ -12,6 +12,7 @@ getPredictionSets(
   alpha = 0.1,
   lambdas = seq(0.001, 0.999, length.out = 100),
   follow_ontology = TRUE,
+  resample_cal = FALSE,
   labels = NULL,
   return.sc = NULL,
   pr.name = "pred.set"
@@ -37,11 +38,15 @@ calibration data}
 
 \item{alpha}{a number between 0 and 1 that indicates the allowed miscoverage}
 
-\item{lambdas}{a vector of possible lambda values to be considered}
+\item{lambdas}{a vector of possible lambda values to be considered. Necessary
+only when \code{follow_ontology=TRUE}.}
 
 \item{follow_ontology}{If \code{TRUE}, then the function returns hierarchical
 prediction sets that follow the cell ontology structure. If \code{FALSE}, it
 returns classical conformal prediction sets.}
+
+\item{resample_cal}{Should the calibration dataset be resampled according to
+the estimated relative frequencies of cell types in the query data?}
 
 \item{labels}{labels of different considered cell types. Necessary if
 \code{onto=NULL}, otherwise they are set to the leaf nodes of the provided
@@ -57,10 +62,10 @@ sets.}
 }
 \value{
 The function \code{getPredictionSets} returns
-\item{If \code{return.sc=TRUE}}{a SingleCellExperiment or SpatialExperiment
+\item{\code{return.sc=TRUE}}{a SingleCellExperiment or SpatialExperiment
 object with the prediction sets in the colData. The name of the variable
 containing the prediction sets is given by the parameter \code{pr.name}}
-\item{If \code{return.sc=FALSE}}{a list of length equal
+\item{\code{return.sc=FALSE}}{a list of length equal
 to the number of cells in the test data. Each element of the list contains
 the prediction set for that cell.}
 }
