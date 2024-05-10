@@ -22,11 +22,11 @@
 #' @param onto the considered section of the cell ontology as an igraph object.
 #' @param alpha a number between 0 and 1 that indicates the allowed miscoverage
 #' @param lambdas a vector of possible lambda values to be considered. Necessary
-#' only when \code{follow_ontology=TRUE}.
-#' @param follow_ontology If \code{TRUE}, then the function returns hierarchical
+#' only when \code{follow.ontology=TRUE}.
+#' @param follow.ontology If \code{TRUE}, then the function returns hierarchical
 #' prediction sets that follow the cell ontology structure. If \code{FALSE}, it
 #' returns classical conformal prediction sets.
-#' @param resample_cal Should the calibration dataset be resampled according to
+#' @param resample.cal Should the calibration dataset be resampled according to
 #' the estimated relative frequencies of cell types in the query data?
 #' @param labels labels of different considered cell types. Necessary if
 #' \code{onto=NULL}, otherwise they are set to the leaf nodes of the provided
@@ -59,14 +59,14 @@
 
 getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
                               lambdas = seq(0.001,0.999,length.out=100),
-                              follow_ontology=TRUE,
-                              resample_cal=FALSE,
+                              follow.ontology=TRUE,
+                              resample.cal=FALSE,
                               labels=NULL,
                               return.sc=NULL, pr.name="pred.set"){
-    if(follow_ontology & is.null(onto)){
+    if(follow.ontology & is.null(onto)){
         stop("An ontology is required for hierarchical prediction set.
              Please provide one or ask for conformal prediction set
-             (follow_ontology=FALSE)")
+             (follow.ontology=FALSE)")
     }
     if(is.null(onto) & is.null(labels)){
         stop("Please provide cell labels with the labels parameter")
@@ -87,7 +87,7 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
               SingleCellExperiment or a matrix")
 
     # Retrieve labels from the ontology (need to add retrieval from y.cal/data
-    # when follow_ontology=FALSE)
+    # when follow.ontology=FALSE)
     if(is.null(labels))
         labels <- V(onto)$name[degree(onto, mode="out")==0]
     K <- length(labels)
@@ -98,23 +98,23 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
         p.query <- matrix(NA, nrow=n.query, ncol=K)
         colnames(p.query) <- labels
         for(i in labels){
-          p.query[,i] <- colData(x.query)[[i]]
+            p.query[,i] <- colData(x.query)[[i]]
         }
     }
     else p.query <- x.query
 
     if(!is.matrix(x.cal)){
-      n.cal <- ncol(x.cal)
-      p.cal <- matrix(NA, nrow=n.cal, ncol=K)
-      colnames(p.cal) <- labels
-      for(i in labels){
-        p.cal[,i] <- colData(x.cal)[[i]]
-      }
+        n.cal <- ncol(x.cal)
+        p.cal <- matrix(NA, nrow=n.cal, ncol=K)
+        colnames(p.cal) <- labels
+        for(i in labels){
+            p.cal[,i] <- colData(x.cal)[[i]]
+        }
     }
     else p.cal <- x.cal
 
-    if(!resample_cal){
-        if (follow_ontology){
+    if(!resample.cal){
+        if (follow.ontology){
           pred.sets <- .getHierarchicalPredSets(p.cal=p.cal, p.test=p.query,
                                                 y.cal=y.cal, onto=onto,
                                                 alpha=alpha,
@@ -125,36 +125,40 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
                                              y.cal=y.cal, alpha=alpha)
     }
 
-    if(resample_cal){
+    if(resample.cal){
         data <- resample.two(p.cal=p.cal, p.test=p.query, y.cal=y.cal,
                              labels=labels)
-        if (follow_ontology){
-          pred.sets1 <- .getHierarchicalPredSets(p.cal=data$p.cal1,
-                                                 p.test=data$p.test2,
-                                                 y.cal=data$y.cal1,
-                                                 onto=onto,
-                                                 alpha=alpha,
-                                                 lambdas=lambdas)$sets.test
-          pred.sets2 <- .getHierarchicalPredSets(p.cal=data$p.cal2,
-                                                 p.test=data$p.test1,
-                                                 y.cal=data$y.cal2,
-                                                 onto=onto,
-                                                 alpha=alpha,
-                                                 lambdas=lambdas)$sets.test
-          pred.sets <- c(pred.sets1, pred_sets2)
+        if (follow.ontology){
+            pred.sets1 <- .getHierarchicalPredSets(p.cal=data$p.cal2,
+                                                   p.test=data$p.test1,
+                                                   y.cal=data$y.cal2,
+                                                   onto=onto,
+                                                   alpha=alpha,
+                                                   lambdas=lambdas)$sets.test
+            pred.sets2 <- .getHierarchicalPredSets(p.cal=data$p.cal1,
+                                                   p.test=data$p.test2,
+                                                   y.cal=data$y.cal1,
+                                                   onto=onto,
+                                                   alpha=alpha,
+                                                   lambdas=lambdas)$sets.test
+            pred.sets <- c(pred.sets1, pred.sets2)
         }
-        else
-          pred.sets1 <- .getConformalPredSets(p.cal=data$p.cal1,
-                                              p.test=data$p.test2,
-                                              y.cal=data$y.cal1,
-                                              alpha=alpha)
-          pred.sets2 <- .getConformalPredSets(p.cal=data$p.cal2,
-                                              p.test=data$p.test1,
-                                              y.cal=data$y.cal2,
-                                              alpha=alpha)
-          pred.sets <- c(pred.sets1, pred_sets2)
-    } # Problem: this prediction sets are not ordered, must be ordered before
-      #          assigning them to the colData
+        else {
+            pred.sets1 <- .getConformalPredSets(p.cal=data$p.cal2,
+                                                p.test=data$p.test1,
+                                                y.cal=data$y.cal2,
+                                                alpha=alpha)
+            pred.sets2 <- .getConformalPredSets(p.cal=data$p.cal1,
+                                                p.test=data$p.test2,
+                                                y.cal=data$y.cal1,
+                                                alpha=alpha)
+            pred.sets <- c(pred.sets1, pred.sets2)
+        }
+        # Order the prediction set
+        pred.sets <- pred.sets[order(data$idx)]
+    }
+
+
 
     # if not specified, return a sc object if the input was a sc object,
     # a matrix if the input was a matrix

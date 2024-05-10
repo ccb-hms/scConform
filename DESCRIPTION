@@ -1,4 +1,4 @@
-Package: ConfCell
+Package: scConform
 Type: Package
 Title: Conformal Inference For Cell Type Annotation
 Version: 0.99.0

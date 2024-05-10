@@ -11,8 +11,8 @@ getPredictionSets(
   onto = NULL,
   alpha = 0.1,
   lambdas = seq(0.001, 0.999, length.out = 100),
-  follow_ontology = TRUE,
-  resample_cal = FALSE,
+  follow.ontology = TRUE,
+  resample.cal = FALSE,
   labels = NULL,
   return.sc = NULL,
   pr.name = "pred.set"
@@ -39,13 +39,13 @@ calibration data}
 \item{alpha}{a number between 0 and 1 that indicates the allowed miscoverage}
 
 \item{lambdas}{a vector of possible lambda values to be considered. Necessary
-only when \code{follow_ontology=TRUE}.}
+only when \code{follow.ontology=TRUE}.}
 
-\item{follow_ontology}{If \code{TRUE}, then the function returns hierarchical
+\item{follow.ontology}{If \code{TRUE}, then the function returns hierarchical
 prediction sets that follow the cell ontology structure. If \code{FALSE}, it
 returns classical conformal prediction sets.}
 
-\item{resample_cal}{Should the calibration dataset be resampled according to
+\item{resample.cal}{Should the calibration dataset be resampled according to
 the estimated relative frequencies of cell types in the query data?}
 
 \item{labels}{labels of different considered cell types. Necessary if
