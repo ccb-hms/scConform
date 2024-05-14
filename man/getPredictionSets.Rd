@@ -2,7 +2,7 @@
 % Please edit documentation in R/getPredictionSets.R
 \name{getPredictionSets}
 \alias{getPredictionSets}
-\title{Get prediction sets}
+\title{Get conformal prediction sets}
 \usage{
 getPredictionSets(
   x.query,
@@ -58,7 +58,7 @@ it is set to \code{TRUE} when \code{x.query} is a SingleCellExperiment or
 SpatialExperiment object, to \code{FALSE} when \code{x.query} is a matrix.}
 
 \item{pr.name}{name of the colData variable that will contain the prediction
-sets.}
+sets. Default \code{pred.set}.}
 }
 \value{
 The function \code{getPredictionSets} returns

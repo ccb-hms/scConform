@@ -1,3 +1,7 @@
+# Function to implement the resampling strategy when calibration and test
+# set supposedly have a different distribution of the cell types.
+# Right now it implements a two-fold strategy, dividing randomly
+# test data in two.
 
 resample.two <- function(p.cal, p.test, y.cal, labels){
     s <- sample(1:nrow(p.test), round(nrow(p.test)/2))

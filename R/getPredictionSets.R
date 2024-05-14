@@ -1,4 +1,4 @@
-#' @title Get prediction sets
+#' @title Get conformal prediction sets
 #' @description Let K be the total number of distinct cell type labels and n, m
 #' the number of cells in the calibration and in the test data, respectively.
 #' This function takes as input two matrices: a matrix \code{n x K} and
@@ -36,7 +36,7 @@
 #' it is set to \code{TRUE} when \code{x.query} is a SingleCellExperiment or
 #' SpatialExperiment object, to \code{FALSE} when \code{x.query} is a matrix.
 #' @param pr.name name of the colData variable that will contain the prediction
-#' sets.
+#' sets. Default \code{pred.set}.
 #' @author Daniela Corbetta
 #' @return The function \code{getPredictionSets} returns
 #' \item{\code{return.sc=TRUE}}{a SingleCellExperiment or SpatialExperiment
@@ -55,6 +55,10 @@
 #' @importFrom foreach %dopar%
 #' @importFrom foreach foreach
 #' @importFrom SummarizedExperiment colData
+#' @importFrom igraph V
+#' @importFrom igraph degree
+#' @importFrom igraph distances
+#' @importFrom stats quantile
 #' @export
 
 getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
@@ -62,14 +66,15 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
                               follow.ontology=TRUE,
                               resample.cal=FALSE,
                               labels=NULL,
-                              return.sc=NULL, pr.name="pred.set"){
+                              return.sc=NULL,
+                              pr.name="pred.set"){
     if(follow.ontology & is.null(onto)){
         stop("An ontology is required for hierarchical prediction set.
              Please provide one or ask for conformal prediction set
              (follow.ontology=FALSE)")
     }
     if(is.null(onto) & is.null(labels)){
-        stop("Please provide cell labels with the labels parameter")
+        stop("Please provide cell labels (labels parameter)")
     }
     if(!is.null(return.sc)){
         if(return.sc==TRUE & is.matrix(x.query)){
@@ -115,14 +120,14 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
 
     if(!resample.cal){
         if (follow.ontology){
-          pred.sets <- .getHierarchicalPredSets(p.cal=p.cal, p.test=p.query,
-                                                y.cal=y.cal, onto=onto,
-                                                alpha=alpha,
-                                                lambdas=lambdas)$sets.test
+            pred.sets <- .getHierarchicalPredSets(p.cal=p.cal, p.test=p.query,
+                                                  y.cal=y.cal, onto=onto,
+                                                  alpha=alpha,
+                                                  lambdas=lambdas)
         }
         else
-          pred.sets <- .getConformalPredSets(p.cal=p.cal, p.test=p.query,
-                                             y.cal=y.cal, alpha=alpha)
+            pred.sets <- .getConformalPredSets(p.cal=p.cal, p.test=p.query,
+                                               y.cal=y.cal, alpha=alpha)
     }
 
     if(resample.cal){
@@ -134,13 +139,13 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
                                                    y.cal=data$y.cal2,
                                                    onto=onto,
                                                    alpha=alpha,
-                                                   lambdas=lambdas)$sets.test
+                                                   lambdas=lambdas)
             pred.sets2 <- .getHierarchicalPredSets(p.cal=data$p.cal1,
                                                    p.test=data$p.test2,
                                                    y.cal=data$y.cal1,
                                                    onto=onto,
                                                    alpha=alpha,
-                                                   lambdas=lambdas)$sets.test
+                                                   lambdas=lambdas)
             pred.sets <- c(pred.sets1, pred.sets2)
         }
         else {
@@ -157,8 +162,6 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
         # Order the prediction set
         pred.sets <- pred.sets[order(data$idx)]
     }
-
-
 
     # if not specified, return a sc object if the input was a sc object,
     # a matrix if the input was a matrix
