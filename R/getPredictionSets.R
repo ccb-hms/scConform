@@ -200,7 +200,7 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
         # for(i in labels){
         #     p.query[,i] <- colData(x.query)[[i]]
         # }
-        p.query <- .retrievePredMatrix(x.query)
+        p.query <- .retrievePredMatrix(x.query, K=K)
     } else {
         p.query <- x.query
     }
@@ -212,7 +212,7 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
         # for(i in labels){
         #     p.cal[,i] <- colData(x.cal)[[i]]
         # }
-        p.cal <- .retrievePredMatrix(x.cal)
+        p.cal <- .retrievePredMatrix(x.cal, K=K)
     } else {
         p.cal <- x.cal
     }
@@ -295,7 +295,7 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
 ## function to retrieve prediction matrix from the colData of a
 ## SingleCellExperiment object
 
-.retrievePredMatrix <- function(sc) {
+.retrievePredMatrix <- function(sc, K) {
     n.sc <- ncol(sc)
     p.sc <- matrix(NA, nrow = n.sc, ncol = K)
     colnames(p.sc) <- labels

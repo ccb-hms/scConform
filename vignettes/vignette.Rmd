@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 
 # Load useful packages
 
-```{r setup, message=FALSE}
+```{r libraries, message=FALSE}
 library(scConform)
 library(SingleCellExperiment)
 library(VGAM)
@@ -34,11 +34,38 @@ library(MerfishData)
 library(doParallel)
 library(igraph)
 library(scuttle)
-#
-# `%notin%` = Negate(`%in%`)
 
-# num_cores <- 8
-# cl1 <- makeCluster(num_cores)
-# registerDoParallel(cl1)
+`%notin%` = Negate(`%in%`)
+
+num_cores <- 2
+cl1 <- makeCluster(num_cores)
+registerDoParallel(cl1)
 ```
+
+
+
+***
+
+## R.session Info
+
+```{r SessionInfo, echo=FALSE, message=FALSE, warning=FALSE, comment=NA}
+sessionInfo()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

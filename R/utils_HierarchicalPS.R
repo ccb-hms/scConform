@@ -1,6 +1,7 @@
 # Function to get the hierarchical prediction sets for the observation in p.test
-# Needs a vector of lambda values. For each of the lambdas computes the prediction sets
-# for the data in the calibration set (p.cal n_cal x K matrix that contains
+# Needs a vector of lambda values. For each of the lambdas computes the
+# prediction sets for the data in the calibration set
+# (p.cal n_cal x K matrix that contains
 # estimated probabilities for each label). Based on these sets that compute the
 # loss table and then gets lambda hat based on equation (4) in Bates and
 # Angelopoulus (2023), Conformal Risk Control. Finally, builds prediction sets
