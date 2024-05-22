@@ -16,7 +16,14 @@ Suggests:
     knitr,
     Matrix,
     rmarkdown,
-    BiocStyle
+    BiocStyle,
+    VGAM,
+    foreach,
+    ontoProc,
+    MerfishData,
+    doParallel,
+    igraph,
+    scuttle
 Imports:
     foreach,
     igraph,
