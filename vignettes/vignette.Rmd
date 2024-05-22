@@ -22,6 +22,23 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+# Load useful packages
+
+```{r setup, message=FALSE}
 library(scConform)
+library(SingleCellExperiment)
+library(VGAM)
+library(foreach)
+library(ontoProc)
+library(MerfishData)
+library(doParallel)
+library(igraph)
+library(scuttle)
+
+`%notin%` = Negate(`%in%`)
+                                                                                
+# num_cores <- 8  
+# cl1 <- makeCluster(num_cores)
+# registerDoParallel(cl1)
 ```
+
