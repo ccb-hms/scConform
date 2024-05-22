@@ -19,15 +19,15 @@ resample.two <- function(p.cal, p.test, y.cal, labels){
 
     idx1 <- idx2 <- NULL
     for (i in labels) {
-      cat <- which(y.cal == i)
-      if(!is.na(des.freq1[i])){
-        idx.cat1 <- sample(cat, size = des.freq1[i], replace = TRUE)
-        idx1 <- c(idx1, idx.cat1)
-      }
-      if(!is.na(des.freq2[i])){
-        idx.cat2 <- sample(cat, size = des.freq2[i], replace = TRUE)
-        idx2 <- c(idx2, idx.cat2)
-      }
+        cat <- which(y.cal == i)
+        if(!is.na(des.freq1[i])){
+            idx.cat1 <- sample(cat, size = des.freq1[i], replace = TRUE)
+            idx1 <- c(idx1, idx.cat1)
+        }
+        if(!is.na(des.freq2[i])){
+            idx.cat2 <- sample(cat, size = des.freq2[i], replace = TRUE)
+            idx2 <- c(idx2, idx.cat2)
+        }
     }
 
     return(list(p.cal1=p.cal[idx1,],

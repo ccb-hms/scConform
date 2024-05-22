@@ -154,14 +154,19 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
                               labels=NULL,
                               return.sc=NULL,
                               pr.name="pred.set"){
+
+    ## Sanity checks
+
     if(follow.ontology & is.null(onto)){
         stop("An ontology is required for hierarchical prediction set.
              Please provide one or ask for conformal prediction set
              (follow.ontology=FALSE)")
     }
+
     if(is.null(onto) & is.null(labels)){
         stop("Please provide cell labels (labels parameter)")
     }
+
     if(isa(x.query, "SpatialExperiment") |
        isa(x.query, "SingleCellExperiment") |
        isa(x.query, "SummarizedExperiment"))
@@ -171,6 +176,7 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
     else
         stop("Please provide as input in x.query a SpatialExperiment,
               SingleCellExperiment or a matrix")
+
     if(!is.null(return.sc)){
       if(return.sc==TRUE & !sc){
         stop("If x.query is a matrix output has to be a list
@@ -187,22 +193,24 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
     # If input is not a matrix, retrieve prediction matrix from colData
     # might turn this into a helper function
     if(!is.matrix(x.query)){
-        n.query <- ncol(x.query)
-        p.query <- matrix(NA, nrow=n.query, ncol=K)
-        colnames(p.query) <- labels
-        for(i in labels){
-            p.query[,i] <- colData(x.query)[[i]]
-        }
+        # n.query <- ncol(x.query)
+        # p.query <- matrix(NA, nrow=n.query, ncol=K)
+        # colnames(p.query) <- labels
+        # for(i in labels){
+        #     p.query[,i] <- colData(x.query)[[i]]
+        # }
+        p.query <- .retrievePredMatrix(x.query)
     }
     else p.query <- x.query
 
     if(!is.matrix(x.cal)){
-        n.cal <- ncol(x.cal)
-        p.cal <- matrix(NA, nrow=n.cal, ncol=K)
-        colnames(p.cal) <- labels
-        for(i in labels){
-            p.cal[,i] <- colData(x.cal)[[i]]
-        }
+        # n.cal <- ncol(x.cal)
+        # p.cal <- matrix(NA, nrow=n.cal, ncol=K)
+        # colnames(p.cal) <- labels
+        # for(i in labels){
+        #     p.cal[,i] <- colData(x.cal)[[i]]
+        # }
+        p.cal <- .retrievePredMatrix(x.cal)
     }
     else p.cal <- x.cal
 
@@ -266,3 +274,22 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
     }
 
 }
+
+## function to retrieve prediction matrix from the colData of a
+## SingleCellExperiment object
+
+.retrievePredMatrix <- function(sc){
+    n.sc <- ncol(sc)
+    p.sc <- matrix(NA, nrow=n.sc, ncol=K)
+    colnames(p.sc) <- labels
+    for(i in labels){
+        p.sc[,i] <- colData(sc)[[i]]
+    }
+    return(p.sc)
+}
+
+
+
+
+
+
