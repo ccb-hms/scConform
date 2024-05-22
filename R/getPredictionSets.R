@@ -147,13 +147,14 @@
 #' @importFrom stats quantile
 #' @export
 
-getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
-    lambdas = seq(0.001, 0.999, length.out = 100),
-    follow.ontology = TRUE,
-    resample.cal = FALSE,
-    labels = NULL,
-    return.sc = NULL,
-    pr.name = "pred.set") {
+getPredictionSets <- function(
+        x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
+        lambdas = seq(0.001, 0.999, length.out = 100),
+        follow.ontology = TRUE,
+        resample.cal = FALSE,
+        labels = NULL,
+        return.sc = NULL,
+        pr.name = "pred.set") {
     ## Sanity checks
 
     if (follow.ontology & is.null(onto)) {
@@ -200,7 +201,7 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
         # for(i in labels){
         #     p.query[,i] <- colData(x.query)[[i]]
         # }
-        p.query <- .retrievePredMatrix(x.query, K=K)
+        p.query <- .retrievePredMatrix(x.query, K = K, labels = labels)
     } else {
         p.query <- x.query
     }
@@ -212,7 +213,7 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
         # for(i in labels){
         #     p.cal[,i] <- colData(x.cal)[[i]]
         # }
-        p.cal <- .retrievePredMatrix(x.cal, K=K)
+        p.cal <- .retrievePredMatrix(x.cal, K = K, labels = labels)
     } else {
         p.cal <- x.cal
     }
@@ -295,7 +296,7 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
 ## function to retrieve prediction matrix from the colData of a
 ## SingleCellExperiment object
 
-.retrievePredMatrix <- function(sc, K) {
+.retrievePredMatrix <- function(sc, K, labels) {
     n.sc <- ncol(sc)
     p.sc <- matrix(NA, nrow = n.sc, ncol = K)
     colnames(p.sc) <- labels

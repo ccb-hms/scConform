@@ -7,13 +7,14 @@
 # Angelopoulus (2023), Conformal Risk Control. Finally, builds prediction sets
 # for p.test based on the selected lambda value.
 
-.getHierarchicalPredSets <- function(p.cal, p.test, y.cal, onto, alpha,
-    lambdas) {
+.getHierarchicalPredSets <- function(
+        p.cal, p.test, y.cal, onto, alpha,
+        lambdas) {
     y.cal <- as.character(y.cal)
     # Get prediction sets for each value of lambda for all the calibration data
     j <- NULL
     exportedFn <- c(".predSets", ".scores", ".children", ".ancestors")
-    sets <- foreach(j = lambdas, .export = exportedFn) %dopar% {
+    sets <- foreach(j = lambdas, .export = exportedFn, .packages = "scConform") %dopar% {
         lapply(
             1:nrow(p.cal),
             function(i) .predSets(lambda = j, pred = p.cal[i, ], onto = onto)

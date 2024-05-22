@@ -26,7 +26,8 @@ Suggests:
     MerfishData,
     doParallel,
     scuttle,
-    SingleCellExperiment
+    SingleCellExperiment,
+    scran
 Imports:
     foreach,
     igraph,
