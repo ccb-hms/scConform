@@ -1,5 +1,5 @@
 ---
-title: "Example vignette"
+title: "Conformal Prediction for cell type annotation"
 author:
     - name: Daniela Corbetta
       affiliation: Department of Statistical Sciences, University of Padova 
@@ -52,3 +52,225 @@ As an example, we'll load the mouse ileum Merfish data from the MerfishData Bioc
 spe.baysor <- MouseIleumPetukhov2021(segmentation = "baysor")
 cl <- getOnto("cellOnto", "2023")
 ```
+
+## Build the ontology
+
+To restrict the cell ontology to the interesting part that is related to the cell types
+that are present in our data, we need to find the corresponding tags:
+```{r tags, echo=TRUE}
+tags <- c(
+    "CL:0009022",
+    "CL:0000236",
+    "CL:0009080",
+    "CL:1000411",
+    "CL:1000335",
+    "CL:1000326",
+    "CL:0002088",
+    "CL:0009007",
+    "CL:1000343",
+    "CL:0000669",
+    "CL:1000278",
+    "CL:0009017",
+    "CL:0000492",
+    "CL:0000625",
+    "CL:0017004"
+)
+opi <- graph_from_graphnel(onto_plot2(cl, tags))
+```
+
+In the \texttt{opi} object, there are also instances from other ontologies (CARO and BFO). 
+Remove them and rename the vertex to have them match the annotations.
+
+```{r build-ontology}
+sel_ver <- V(opi)$name[c(grep("CARO", V(opi)$name), grep("BFO", V(opi)$name))]
+opi1 <- opi - sel_ver
+
+## Rename vertex to match annotations
+V(opi1)$name[V(opi1)$name == "B\ncell\nCL:0000236"] <- "B cell"
+V(opi1)$name[V(opi1)$name == "endothelial\ncell of Peyer's patch\nCL:1000411"] <- "Endothelial"
+V(opi1)$name[V(opi1)$name == "enterocyte\nof epithelium of intestinal villus\nCL:1000335"] <- "Enterocyte"
+V(opi1)$name[V(opi1)$name == "ileal\ngoblet cell\nCL:1000326"] <- "Goblet"
+V(opi1)$name[V(opi1)$name == "interstitial\ncell of Cajal\nCL:0002088"] <- "ICC"
+V(opi1)$name[V(opi1)$name == "gastrointestinal\ntract (lamina propria) macrophage of small intestine\nCL:0009007"] <- "Macrophage + DC"
+V(opi1)$name[V(opi1)$name == "paneth\ncell of epithelium of small intestine\nCL:1000343"] <- "Paneth"
+V(opi1)$name[V(opi1)$name == "pericyte\nCL:0000669"] <- "Pericyte"
+V(opi1)$name[V(opi1)$name == "smooth\nmuscle fiber of ileum\nCL:1000278"] <- "Smooth Muscle"
+V(opi1)$name[V(opi1)$name == "intestinal\ncrypt stem cell of small intestine\nCL:0009017"] <- "Stem + TA"
+V(opi1)$name[V(opi1)$name == "stromal\ncell of lamina propria of small intestine\nCL:0009022"] <- "Stromal"
+V(opi1)$name[V(opi1)$name == "CD4-positive\nhelper T cell\nCL:0000492"] <- "T (CD4+)"
+V(opi1)$name[V(opi1)$name == "CD8-positive,\nalpha-beta T cell\nCL:0000625"] <- "T (CD8+)"
+V(opi1)$name[V(opi1)$name == "telocyte\nCL:0017004"] <- "Telocyte"
+V(opi1)$name[V(opi1)$name == "tuft\ncell of small intestine\nCL:0009080"] <- "Tuft"
+
+## Add the edge from connective tissue cell and telocyte and delete useless nodes
+opi1 <- add_edges(opi1, c("connective\ntissue cell\nCL:0002320", "Telocyte"))
+gr <- as_graphnel(opi1)
+opi2 <- opi1 - c(
+    "somatic\ncell\nCL:0002371", "contractile\ncell\nCL:0000183",
+    "native\ncell\nCL:0000003"
+)
+gr1 <- as_graphnel(opi2)
+plot(gr1, attrs = list(node = list(fontsize = 27)))
+```
+
+## Preprocess data
+
+Modify the colData variable "leiden_final" to unify B cells and enterocytes
+
+```{r preprocess}
+spe.baysor$cell_type <- spe.baysor$leiden_final
+spe.baysor$cell_type[spe.baysor$cell_type %in% c(
+    "B (Follicular, Circulating)",
+    "B (Plasma)"
+)] <- "B cell"
+spe.baysor$cell_type[grep("Enterocyte", spe.baysor$cell_type)] <- "Enterocyte"
+spe.baysor <- spe.baysor[, spe.baysor$cell_type %notin% c(
+    "Removed",
+    "Myenteric Plexus"
+)]
+spe.baysor
+```
+
+## Fit model
+Fit a multinomial model with a random sample of 500 cells using the 50 HVGs.
+```{r model, warning=FALSE}
+# get. HVGs
+spe.baysor <- logNormCounts(spe.baysor)
+v <- modelGeneVar(spe.baysor)
+hvg <- getTopHVGs(v, n = 50)
+
+# Extract counts and construct df
+df <- as.data.frame(t(as.matrix(counts(spe.baysor[hvg, ]))))
+df$Y <- spe.baysor$cell_type
+set.seed(1703)
+train <- sample(1:nrow(df), 500)
+df.train <- df[train, ]
+table(df.train$Y)
+
+# Fit model
+fit <- vglm(Y ~ .,
+    family = multinomial(refLevel = "B cell"),
+    data = df.train
+)
+df.other <- df[-train, ]
+spe.other <- spe.baysor[, -train]
+```
+
+# Prediction sets
+
+Split data randomly in calibration and query data
+```{r splitdata}
+# split data
+set.seed(1237)
+cal <- sample(1:nrow(df.other), 1000)
+df.cal <- df.other[cal, ]
+df.test <- df.other[-cal, ]
+```
+
+
+## Obtain prediction matrices
+
+The first step to build conformal prediction sets is to obtain prediction matrices
+for data in the calibration data and in the query data. Each row of the matrix 
+correspons to a particular cell, while each row to a different cell type. The entry
+$p_{i,j}$ of the matrix indicates the estimated probability that the cell $i$ is
+of type $j$.
+```{r predictions, warning=FALSE}
+# Prediction matrix for calibration data
+p.cal <- predict(fit, newdata = df.cal, type = "response")
+# Prediction matrix for query data
+p.test <- predict(fit, newdata = df.test, type = "response")
+```
+
+
+## Obtain conformal prediction sets
+
+We can now directly call the \texttt{getPredictionSet} function by using as input the
+prediction matrices for the calibration and the query dataset. In this case, the 
+output of the function will be a list whose elements are the prediction sets for each query cell.
+By setting \texttt{follow_ontology=FALSE}, we are asking the function to return
+prediction sets obtained via standard conformal inference.
+
+```{r predsets}
+sets <- getPredictionSets(
+    x.query = p.test, x.cal = p.cal, y.cal = df.cal$Y,
+    onto = opi2, alpha = 0.1,
+    follow.ontology = FALSE
+)
+```
+
+As an alternative, we can provide as input a SingleCellExperiment object. In this case,
+it needs to have in the colData the estimated probabilities for each cell type.
+The names of these colData have to correspond to the names of the leaf nodes in the
+ontology. Let's create the two separate SingleCellExperiment objects and add the predictions to the colData.
+
+```{r predsets-sc}
+# Create the SingleCellExperiment objects
+spe.cal <- spe.other[, cal]
+spe.test <- spe.other[, -cal]
+
+# Retrieve labels as leaf nodes of the ontology
+labels <- V(opi2)$name[degree(opi2, mode = "out") == 0]
+
+# Create corresponding colData
+for (i in labels) {
+    colData(spe.cal)[[i]] <- p.cal[, i]
+    colData(spe.test)[[i]] <- p.test[, i]
+}
+
+# Create prediction sets
+
+#### Modify y.cal
+spe.test <- getPredictionSets(
+    x.query = spe.test, x.cal = spe.cal, y.cal = df.cal$Y,
+    onto = opi2, alpha = 0.1,
+    follow.ontology = FALSE
+)
+
+spe.test <- getPredictionSets(
+    x.query = spe.test, x.cal = spe.cal, y.cal = df.cal$Y,
+    onto = opi2, alpha = 0.1,
+    follow.ontology = TRUE,
+    pr.name = "pred.set.hier"
+)
+# spe.test <- getPredictionSets(x.query=spe.test, x.cal=spe.cal,
+#                               y.cal = df.cal$Y,
+#                               onto = opi2, alpha = 0.1,
+#                               follow.ontology = FALSE, resample.cal = TRUE)
+
+# head(colData(spe.test))
+# l <- sapply(sets, length)
+# l.bis <- sapply(spe.test$pred.set, length)
+# mean(l)
+# mean(l.bis)
+# barplot(table(l.bis))
+
+# l.onto <- sapply(sets.onto, length)
+# mean(l.onto)
+```
+
+***
+
+## R.session Info
+
+```{r SessionInfo, echo=FALSE, message=FALSE, warning=FALSE, comment=NA}
+sessionInfo()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
