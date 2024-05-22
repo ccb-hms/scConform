@@ -6,22 +6,26 @@
 #' @author Daniela Corbetta
 #' @return vector with names of the selected leaf nodes
 
-.predSets <- function(lambda, pred, onto){
+.predSets <- function(lambda, pred, onto) {
     # Get the predicted class and its ancestors
     pred_class <- names(pred)[which.max(pred)]
     anc <- .ancestors(node = pred_class, onto = onto, include_self = TRUE)
 
     # Compute scores for all the ancestor of the predicted class
-    s <- sapply(as.character(anc), function(i) .scores(pred=pred, int_node=i,
-                                                       onto=onto))
+    s <- sapply(as.character(anc), function(i) {
+        .scores(
+            pred = pred, int_node = i,
+            onto = onto
+        )
+    })
     names(s) <- anc
 
-    #Sort them by score and if there are ties by distance to the predicted class
+    # Sort them by score and if there are ties by distance to the predicted class
     ## compute distance from predicted class
-    pos <- distances(onto, v=anc, to=pred_class, mode="out")
+    pos <- distances(onto, v = anc, to = pred_class, mode = "out")
     tie_breaker <- as.vector(t(pos))
     names(tie_breaker) <- colnames(t(pos))
-    sorted_indices <- order(s, tie_breaker, decreasing=FALSE)
+    sorted_indices <- order(s, tie_breaker, decreasing = FALSE)
     sorted_scores <- s[sorted_indices]
 
     # Select the first score that is geq than lambda
@@ -29,9 +33,12 @@
 
 
     # Add also the subgraphs we would have obtained with smaller lambda
-    selected <- c(lapply(anc[round(s, 15) < lambda], function(x)
-                      .children(node = x, onto = onto)),
-                  list(.children(sel_node, onto)))
+    selected <- c(
+        lapply(anc[round(s, 15) < lambda], function(x) {
+            .children(node = x, onto = onto)
+        }),
+        list(.children(sel_node, onto))
+    )
 
     return(Reduce(union, selected))
 }

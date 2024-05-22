@@ -30,87 +30,93 @@
 # Angelopoulus (2023), Conformal Risk Control. Finally, builds prediction sets
 # for p.test based on the selected lambda value.
 
-.getHierarchicalPredSets <- function(p.cal, p.test, y.cal, onto, alpha, lambdas){
+.getHierarchicalPredSets <- function(p.cal, p.test, y.cal, onto, alpha, lambdas) {
     y.cal <- as.character(y.cal)
     # Get prediction sets for each value of lambda for all the calibration data
     j <- NULL
-    exportedFn = c(".predSets", ".scores", ".children", ".ancestors")
-    sets <- foreach(j = lambdas, .export=exportedFn) %dopar% {
-              lapply(1:nrow(p.cal),
-                function(i) .predSets(lambda=j, pred=p.cal[i, ], onto=onto))
-      }
+    exportedFn <- c(".predSets", ".scores", ".children", ".ancestors")
+    sets <- foreach(j = lambdas, .export = exportedFn) %dopar% {
+        lapply(
+            1:nrow(p.cal),
+            function(i) .predSets(lambda = j, pred = p.cal[i, ], onto = onto)
+        )
+    }
 
     # Get the loss table (ncal x length(lambda) table with TRUE\FALSE)
     loss <- sapply(1:length(lambdas), function(lambda) {
-      sapply(seq_along(y.cal), function(i) {
-        !(y.cal[i] %in% sets[[lambda]][[i]])
-      })
+        sapply(seq_along(y.cal), function(i) {
+            !(y.cal[i] %in% sets[[lambda]][[i]])
+        })
     })
 
     # Get lhat
     n <- nrow(loss)
     rhat <- colMeans(loss)
-    lhat_idx <- min(which(((n/(n+1)) * rhat + 1/(n+1) ) <= alpha))
+    lhat_idx <- min(which(((n / (n + 1)) * rhat + 1 / (n + 1)) <= alpha))
     lhat <- lambdas[lhat_idx]
 
 
     # Get prediction sets for test data
-    sets.test <- apply(p.test, 1, function(x) .predSets(lambda=lhat, pred=x, onto=onto))
+    sets.test <- apply(p.test, 1, function(x) .predSets(lambda = lhat, pred = x, onto = onto))
 
-    return(list(sets.test=sets.test, lhat=lhat))
+    return(list(sets.test = sets.test, lhat = lhat))
 }
 
 
-.ancestors <- function(node, onto, include_self=TRUE){
-  if(include_self)
-    return(V(onto)$name[is.finite(distances(onto, node, mode="in"))])
-  else
-    return(V(onto)$name[is.finite(distances(onto, node, mode="in")) & V(onto)$name!=node])
+.ancestors <- function(node, onto, include_self = TRUE) {
+    if (include_self) {
+        return(V(onto)$name[is.finite(distances(onto, node, mode = "in"))])
+    } else {
+        return(V(onto)$name[is.finite(distances(onto, node, mode = "in")) & V(onto)$name != node])
+    }
 }
 
-.children <- function(node, onto, leaf=TRUE){
-  if(leaf)
-    return(V(onto)$name[is.finite(distances(onto, node, mode="out")) & degree(onto, mode="out")==0])
-  else
-    return(V(onto)$name[is.finite(distances(onto, node, mode="out"))])
+.children <- function(node, onto, leaf = TRUE) {
+    if (leaf) {
+        return(V(onto)$name[is.finite(distances(onto, node, mode = "out")) & degree(onto, mode = "out") == 0])
+    } else {
+        return(V(onto)$name[is.finite(distances(onto, node, mode = "out"))])
+    }
 }
 
-.scores <- function(pred, int_node, onto){
-  c <- .children(node = int_node, onto = onto, leaf = TRUE)
-  return(sum(pred[c]))
+.scores <- function(pred, int_node, onto) {
+    c <- .children(node = int_node, onto = onto, leaf = TRUE)
+    return(sum(pred[c]))
 }
 
-.predSets <- function(lambda, pred, onto){
-  # Get the predicted class and its ancestors
-  pred_class <- names(pred)[which.max(pred)]
-  anc <- .ancestors(node = pred_class, onto = onto, include_self = TRUE)
+.predSets <- function(lambda, pred, onto) {
+    # Get the predicted class and its ancestors
+    pred_class <- names(pred)[which.max(pred)]
+    anc <- .ancestors(node = pred_class, onto = onto, include_self = TRUE)
 
-  # Compute scores for all the ancestor of the predicted class
-  s <- sapply(as.character(anc), function(i) .scores(pred=pred, int_node=i,
-                                                     onto=onto))
-  names(s) <- anc
+    # Compute scores for all the ancestor of the predicted class
+    s <- sapply(as.character(anc), function(i) {
+        .scores(
+            pred = pred, int_node = i,
+            onto = onto
+        )
+    })
+    names(s) <- anc
 
-  #Sort them by score and if there are ties by distance to the predicted class
-  ## compute distance from predicted class
-  pos <- distances(onto, v=anc, to=pred_class, mode="out")
-  tie_breaker <- as.vector(t(pos))
-  names(tie_breaker) <- colnames(t(pos))
-  sorted_indices <- order(s, tie_breaker, decreasing=FALSE)
-  sorted_scores <- s[sorted_indices]
+    # Sort them by score and if there are ties by distance to the predicted class
+    ## compute distance from predicted class
+    pos <- distances(onto, v = anc, to = pred_class, mode = "out")
+    tie_breaker <- as.vector(t(pos))
+    names(tie_breaker) <- colnames(t(pos))
+    sorted_indices <- order(s, tie_breaker, decreasing = FALSE)
+    sorted_scores <- s[sorted_indices]
 
-  # Select the first score that is geq than lambda
-  sel_node <- names(sorted_scores)[round(sorted_scores, 15) >= lambda][1]
+    # Select the first score that is geq than lambda
+    sel_node <- names(sorted_scores)[round(sorted_scores, 15) >= lambda][1]
 
 
-  # Add also the subgraphs we would have obtained with smaller lambda
-  selected <- c(lapply(anc[round(s, 15) < lambda], function(x)
-    .children(node = x, onto = onto)),
-    list(.children(sel_node, onto)))
+    # Add also the subgraphs we would have obtained with smaller lambda
+    selected <- c(
+        lapply(anc[round(s, 15) < lambda], function(x) {
+            .children(node = x, onto = onto)
+        }),
+        list(.children(sel_node, onto))
+    )
 
-  return(Reduce(union, selected))
+    return(Reduce(union, selected))
 }
-
-
-
-
-

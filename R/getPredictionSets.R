@@ -109,7 +109,7 @@
 #' @examples
 #' # random p matrix
 #' set.seed(1040)
-#' p <- matrix(rnorm(2000*4), ncol=4)
+#' p <- matrix(rnorm(2000 * 4), ncol = 4)
 #' # Normalize the matrix p to have all numbers between 0 and 1 that sum to 1
 #' # by row
 #' p <- exp(p - apply(p, 1, max))
@@ -118,25 +118,25 @@
 #' colnames(p) <- cell.types
 #'
 #' # Take 1000 rows as calibration and 1000 as test
-#' p.cal <- p[1:1000,]
-#' p.test <- p[1001:2000,]
+#' p.cal <- p[1:1000, ]
+#' p.test <- p[1001:2000, ]
 #'
 #' # Randomly create the vector of real cell types for p.cal and p.test
-#' y.cal <- sample(cell.types, 1000, replace=TRUE)
-#' y.test <- sample(cell.types, 1000, replace=TRUE)
+#' y.cal <- sample(cell.types, 1000, replace = TRUE)
+#' y.test <- sample(cell.types, 1000, replace = TRUE)
 #'
 #' # Obtain conformal prediction sets
-#' conf.sets <- getPredictionSets(x.query=p.test,
-#'                                x.cal=p.cal,
-#'                                y.cal=y.cal,
-#'                                onto=NULL,
-#'                                alpha=0.1,
-#'                                follow.ontology=FALSE,
-#'                                resample.cal=FALSE,
-#'                                labels=cell.types,
-#'                                return.sc=FALSE
-#'                                )
-#'
+#' conf.sets <- getPredictionSets(
+#'     x.query = p.test,
+#'     x.cal = p.cal,
+#'     y.cal = y.cal,
+#'     onto = NULL,
+#'     alpha = 0.1,
+#'     follow.ontology = FALSE,
+#'     resample.cal = FALSE,
+#'     labels = cell.types,
+#'     return.sc = FALSE
+#' )
 #'
 #' @importFrom foreach %dopar%
 #' @importFrom foreach foreach
@@ -147,52 +147,53 @@
 #' @importFrom stats quantile
 #' @export
 
-getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
-                              lambdas = seq(0.001,0.999,length.out=100),
-                              follow.ontology=TRUE,
-                              resample.cal=FALSE,
-                              labels=NULL,
-                              return.sc=NULL,
-                              pr.name="pred.set"){
-
+getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
+    lambdas = seq(0.001, 0.999, length.out = 100),
+    follow.ontology = TRUE,
+    resample.cal = FALSE,
+    labels = NULL,
+    return.sc = NULL,
+    pr.name = "pred.set") {
     ## Sanity checks
 
-    if(follow.ontology & is.null(onto)){
+    if (follow.ontology & is.null(onto)) {
         stop("An ontology is required for hierarchical prediction set.
              Please provide one or ask for conformal prediction set
              (follow.ontology=FALSE)")
     }
 
-    if(is.null(onto) & is.null(labels)){
+    if (is.null(onto) & is.null(labels)) {
         stop("Please provide cell labels (labels parameter)")
     }
 
-    if(isa(x.query, "SpatialExperiment") |
-       isa(x.query, "SingleCellExperiment") |
-       isa(x.query, "SummarizedExperiment"))
+    if (isa(x.query, "SpatialExperiment") |
+        isa(x.query, "SingleCellExperiment") |
+        isa(x.query, "SummarizedExperiment")) {
         sc <- TRUE
-    else if(is.matrix(x.query))
+    } else if (is.matrix(x.query)) {
         sc <- FALSE
-    else
+    } else {
         stop("Please provide as input in x.query a SpatialExperiment,
               SingleCellExperiment or a matrix")
+    }
 
-    if(!is.null(return.sc)){
-      if(return.sc==TRUE & !sc){
-        stop("If x.query is a matrix output has to be a list
+    if (!is.null(return.sc)) {
+        if (return.sc == TRUE & !sc) {
+            stop("If x.query is a matrix output has to be a list
                  (return.sc=FALSE)")
-      }
+        }
     }
 
     # Retrieve labels from the ontology (need to add retrieval from y.cal/data
     # when follow.ontology=FALSE)
-    if(is.null(labels))
-        labels <- V(onto)$name[degree(onto, mode="out")==0]
+    if (is.null(labels)) {
+        labels <- V(onto)$name[degree(onto, mode = "out") == 0]
+    }
     K <- length(labels)
 
     # If input is not a matrix, retrieve prediction matrix from colData
     # might turn this into a helper function
-    if(!is.matrix(x.query)){
+    if (!is.matrix(x.query)) {
         # n.query <- ncol(x.query)
         # p.query <- matrix(NA, nrow=n.query, ncol=K)
         # colnames(p.query) <- labels
@@ -200,10 +201,11 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
         #     p.query[,i] <- colData(x.query)[[i]]
         # }
         p.query <- .retrievePredMatrix(x.query)
+    } else {
+        p.query <- x.query
     }
-    else p.query <- x.query
 
-    if(!is.matrix(x.cal)){
+    if (!is.matrix(x.cal)) {
         # n.cal <- ncol(x.cal)
         # p.cal <- matrix(NA, nrow=n.cal, ncol=K)
         # colnames(p.cal) <- labels
@@ -211,48 +213,62 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
         #     p.cal[,i] <- colData(x.cal)[[i]]
         # }
         p.cal <- .retrievePredMatrix(x.cal)
+    } else {
+        p.cal <- x.cal
     }
-    else p.cal <- x.cal
 
-    if(!resample.cal){
-        if (follow.ontology){
-            pred.sets <- .getHierarchicalPredSets(p.cal=p.cal, p.test=p.query,
-                                                  y.cal=y.cal, onto=onto,
-                                                  alpha=alpha,
-                                                  lambdas=lambdas)
+    if (!resample.cal) {
+        if (follow.ontology) {
+            pred.sets <- .getHierarchicalPredSets(
+                p.cal = p.cal, p.test = p.query,
+                y.cal = y.cal, onto = onto,
+                alpha = alpha,
+                lambdas = lambdas
+            )
+        } else {
+            pred.sets <- .getConformalPredSets(
+                p.cal = p.cal, p.test = p.query,
+                y.cal = y.cal, alpha = alpha
+            )
         }
-        else
-            pred.sets <- .getConformalPredSets(p.cal=p.cal, p.test=p.query,
-                                               y.cal=y.cal, alpha=alpha)
     }
 
-    if(resample.cal){
-        data <- resample.two(p.cal=p.cal, p.test=p.query, y.cal=y.cal,
-                             labels=labels)
-        if (follow.ontology){
-            pred.sets1 <- .getHierarchicalPredSets(p.cal=data$p.cal2,
-                                                   p.test=data$p.test1,
-                                                   y.cal=data$y.cal2,
-                                                   onto=onto,
-                                                   alpha=alpha,
-                                                   lambdas=lambdas)
-            pred.sets2 <- .getHierarchicalPredSets(p.cal=data$p.cal1,
-                                                   p.test=data$p.test2,
-                                                   y.cal=data$y.cal1,
-                                                   onto=onto,
-                                                   alpha=alpha,
-                                                   lambdas=lambdas)
+    if (resample.cal) {
+        data <- resample.two(
+            p.cal = p.cal, p.test = p.query, y.cal = y.cal,
+            labels = labels
+        )
+        if (follow.ontology) {
+            pred.sets1 <- .getHierarchicalPredSets(
+                p.cal = data$p.cal2,
+                p.test = data$p.test1,
+                y.cal = data$y.cal2,
+                onto = onto,
+                alpha = alpha,
+                lambdas = lambdas
+            )
+            pred.sets2 <- .getHierarchicalPredSets(
+                p.cal = data$p.cal1,
+                p.test = data$p.test2,
+                y.cal = data$y.cal1,
+                onto = onto,
+                alpha = alpha,
+                lambdas = lambdas
+            )
             pred.sets <- c(pred.sets1, pred.sets2)
-        }
-        else {
-            pred.sets1 <- .getConformalPredSets(p.cal=data$p.cal2,
-                                                p.test=data$p.test1,
-                                                y.cal=data$y.cal2,
-                                                alpha=alpha)
-            pred.sets2 <- .getConformalPredSets(p.cal=data$p.cal1,
-                                                p.test=data$p.test2,
-                                                y.cal=data$y.cal1,
-                                                alpha=alpha)
+        } else {
+            pred.sets1 <- .getConformalPredSets(
+                p.cal = data$p.cal2,
+                p.test = data$p.test1,
+                y.cal = data$y.cal2,
+                alpha = alpha
+            )
+            pred.sets2 <- .getConformalPredSets(
+                p.cal = data$p.cal1,
+                p.test = data$p.test2,
+                y.cal = data$y.cal1,
+                alpha = alpha
+            )
             pred.sets <- c(pred.sets1, pred.sets2)
         }
         # Order the prediction set
@@ -261,35 +277,30 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto=NULL, alpha = 0.1,
 
     # if not specified, return a sc object if the input was a sc object,
     # a matrix if the input was a matrix
-    if(is.null(return.sc) & sc)
+    if (is.null(return.sc) & sc) {
         return.sc <- TRUE
-    if(is.null(return.sc) & !sc)
+    }
+    if (is.null(return.sc) & !sc) {
         return.sc <- FALSE
-    if(return.sc){
+    }
+    if (return.sc) {
         colData(x.query)[[pr.name]] <- pred.sets
         return(x.query)
     }
-    if(!return.sc){
+    if (!return.sc) {
         return(pred.sets)
     }
-
 }
 
 ## function to retrieve prediction matrix from the colData of a
 ## SingleCellExperiment object
 
-.retrievePredMatrix <- function(sc){
+.retrievePredMatrix <- function(sc) {
     n.sc <- ncol(sc)
-    p.sc <- matrix(NA, nrow=n.sc, ncol=K)
+    p.sc <- matrix(NA, nrow = n.sc, ncol = K)
     colnames(p.sc) <- labels
-    for(i in labels){
-        p.sc[,i] <- colData(sc)[[i]]
+    for (i in labels) {
+        p.sc[, i] <- colData(sc)[[i]]
     }
     return(p.sc)
 }
-
-
-
-
-
-

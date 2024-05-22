@@ -8,7 +8,7 @@
 #' @author Daniela Corbetta
 #' @return returns the score
 
-.scores <- function(pred, int_node, onto){
+.scores <- function(pred, int_node, onto) {
     c <- .children(node = int_node, onto = onto, leaf = TRUE)
     return(sum(pred[c]))
 }

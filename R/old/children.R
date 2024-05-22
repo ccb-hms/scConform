@@ -10,9 +10,10 @@
 #' @importFrom igraph distances
 
 
-.children <- function(node, onto, leaf=TRUE){
-    if(leaf)
-      return(V(onto)$name[is.finite(distances(onto, node, mode="out")) & degree(onto, mode="out")==0])
-    else
-      return(V(onto)$name[is.finite(distances(onto, node, mode="out"))])
+.children <- function(node, onto, leaf = TRUE) {
+    if (leaf) {
+        return(V(onto)$name[is.finite(distances(onto, node, mode = "out")) & degree(onto, mode = "out") == 0])
+    } else {
+        return(V(onto)$name[is.finite(distances(onto, node, mode = "out"))])
+    }
 }

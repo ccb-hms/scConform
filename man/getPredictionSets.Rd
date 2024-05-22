@@ -135,7 +135,7 @@ still guaranteed that
 \examples{
 # random p matrix
 set.seed(1040)
-p <- matrix(rnorm(2000*4), ncol=4)
+p <- matrix(rnorm(2000 * 4), ncol = 4)
 # Normalize the matrix p to have all numbers between 0 and 1 that sum to 1
 # by row
 p <- exp(p - apply(p, 1, max))
@@ -144,25 +144,25 @@ cell.types <- c("T (CD4+)", "T (CD8+)", "B", "NK")
 colnames(p) <- cell.types
 
 # Take 1000 rows as calibration and 1000 as test
-p.cal <- p[1:1000,]
-p.test <- p[1001:2000,]
+p.cal <- p[1:1000, ]
+p.test <- p[1001:2000, ]
 
 # Randomly create the vector of real cell types for p.cal and p.test
-y.cal <- sample(cell.types, 1000, replace=TRUE)
-y.test <- sample(cell.types, 1000, replace=TRUE)
+y.cal <- sample(cell.types, 1000, replace = TRUE)
+y.test <- sample(cell.types, 1000, replace = TRUE)
 
 # Obtain conformal prediction sets
-conf.sets <- getPredictionSets(x.query=p.test,
-                               x.cal=p.cal,
-                               y.cal=y.cal,
-                               onto=NULL,
-                               alpha=0.1,
-                               follow.ontology=FALSE,
-                               resample.cal=FALSE,
-                               labels=cell.types,
-                               return.sc=FALSE
-                               )
-
+conf.sets <- getPredictionSets(
+    x.query = p.test,
+    x.cal = p.cal,
+    y.cal = y.cal,
+    onto = NULL,
+    alpha = 0.1,
+    follow.ontology = FALSE,
+    resample.cal = FALSE,
+    labels = cell.types,
+    return.sc = FALSE
+)
 
 }
 \references{

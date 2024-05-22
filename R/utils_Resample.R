@@ -3,10 +3,10 @@
 # Right now it implements a two-fold strategy, dividing randomly
 # test data in two.
 
-resample.two <- function(p.cal, p.test, y.cal, labels){
-    s <- sample(1:nrow(p.test), round(nrow(p.test)/2))
-    test1 <- p.test[s,]
-    test2 <- p.test[-s,]
+resample.two <- function(p.cal, p.test, y.cal, labels) {
+    s <- sample(1:nrow(p.test), round(nrow(p.test) / 2))
+    test1 <- p.test[s, ]
+    test2 <- p.test[-s, ]
 
     # Compute predicted class
     pr.class1 <- apply(test1, 1, function(row) colnames(test1)[which.max(row)])
@@ -20,23 +20,25 @@ resample.two <- function(p.cal, p.test, y.cal, labels){
     idx1 <- idx2 <- NULL
     for (i in labels) {
         cat <- which(y.cal == i)
-        if(!is.na(des.freq1[i])){
+        if (!is.na(des.freq1[i])) {
             idx.cat1 <- sample(cat, size = des.freq1[i], replace = TRUE)
             idx1 <- c(idx1, idx.cat1)
         }
-        if(!is.na(des.freq2[i])){
+        if (!is.na(des.freq2[i])) {
             idx.cat2 <- sample(cat, size = des.freq2[i], replace = TRUE)
             idx2 <- c(idx2, idx.cat2)
         }
     }
 
-    return(list(p.cal1=p.cal[idx1,],
-                p.cal2=p.cal[idx2,],
-                p.test1=test1,
-                p.test2=test2,
-                y.cal1=y.cal[idx1],
-                y.cal2=y.cal[idx2],
-                idx=c(s, setdiff(1:nrow(p.test), s)))#index in the original data
-           )
+    return(
+        list(
+            p.cal1 = p.cal[idx1, ],
+            p.cal2 = p.cal[idx2, ],
+            p.test1 = test1,
+            p.test2 = test2,
+            y.cal1 = y.cal[idx1],
+            y.cal2 = y.cal[idx2],
+            idx = c(s, setdiff(1:nrow(p.test), s))
+        ) # index in the original data
+    )
 }
-
