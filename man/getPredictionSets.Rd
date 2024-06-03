@@ -15,7 +15,8 @@ getPredictionSets(
   resample.cal = FALSE,
   labels = NULL,
   return.sc = NULL,
-  pr.name = "pred.set"
+  pr.name = "pred.set",
+  BPPARAM = SerialParam()
 )
 }
 \arguments{
@@ -61,6 +62,9 @@ SpatialExperiment object and to \code{FALSE} when \code{x.query} is a matrix.}
 \item{pr.name}{name of the colData variable in the returned
 SingleCellExperiment object that will contain the prediction
 sets. The default name is \code{pred.set}.}
+
+\item{BPPARAM}{BiocParallel instance for parallel computing. Default is
+\code{SerialParam()}.}
 }
 \value{
 \item{\code{return.sc = TRUE}}{the function \code{getPredictionSets} returns
@@ -173,7 +177,4 @@ arXiv preprint arXiv:2107.07511 (2021).
 For reference on conformal risk control, see
 Angelopoulos, Anastasios N., et al. "Conformal risk control."
 arXiv preprint arXiv:2208.02814 (2022).
-}
-\author{
-Daniela Corbetta
 }

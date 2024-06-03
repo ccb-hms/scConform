@@ -22,7 +22,47 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Load useful packages
+
+# Introduction
+
+Cell type annotation is a crucial step in Bioinformatic research. A multitude of 
+annotated datasets are now readily accessible, providing valuable references for 
+annotating cells in unannotated datasets originating from similar tissues. 
+Typically, a model is chosen and trained on the reference data to predict the 
+label of a new, unannotated cell in the query dataset.
+
+These methods commonly provide point predictions of the cell label, along with
+estimated probabilities or scores assigned to each cell type in the reference 
+dataset. However, relying solely on point predictions can be problematic when 
+the corresponding estimated probability is low, leading to unreliable 
+classification. To address this issue, we propose to exploit conformal
+inference to return prediction sets that include multiple labels, with the set 
+size reflecting the confidence in the point prediction.
+
+The package `scConform` implements two methods to achieve this:
+
+1. The first method uses split conformal inference (ref?). The output is a 
+prediction set, $C(X_{new})$, that contains some of the cell types present in 
+the reference data.
+Let $Y_{new}$ be the true cell type of a new cell in the query dataset. Then, 
+$C(X_{new})$ satisfies $P(Y_{new} \in C(X_{new})) \geq 1-\alpha$, where
+$\alpha$ is a user-chosen error level.
+
+2. The second method is based on conformal risk control (ref). It considers
+the inherent relationships among cell types that are encoded as graph-structured 
+constraints available through the cell ontology. 
+The final output is a prediction set aligned with the
+cell ontology structure. Specifically, the prediction set will include all the
+children of an ancestor of the predicted class. The more unsure the point 
+prediction, the broader the classification. Also this method satisfies 
+$P(Y_{new} \in C(X_{new})) \geq 1-\alpha$.
+
+# Installation
+
+
+# Preliminaries
+
+## Load useful libraries
 
 ```{r libraries, message=FALSE}
 library(scConform)
@@ -35,6 +75,7 @@ library(doParallel)
 library(igraph)
 library(scuttle)
 library(scran)
+library(BiocParallel)
 
 `%notin%` <- Negate(`%in%`)
 
@@ -43,7 +84,6 @@ cl1 <- makeCluster(num_cores)
 registerDoParallel(cl1)
 ```
 
-# Preliminaries
 
 ## Load data and cell ontology
 
@@ -204,7 +244,7 @@ it needs to have in the colData the estimated probabilities for each cell type.
 The names of these colData have to correspond to the names of the leaf nodes in the
 ontology. Let's create the two separate SingleCellExperiment objects and add the predictions to the colData.
 
-```{r predsets-sc}
+```{r predsets-sc, eval=FALSE}
 # Create the SingleCellExperiment objects
 spe.cal <- spe.other[, cal]
 spe.test <- spe.other[, -cal]
@@ -232,6 +272,13 @@ spe.test <- getPredictionSets(
     onto = opi2, alpha = 0.1,
     follow.ontology = TRUE,
     pr.name = "pred.set.hier"
+)
+
+spe.test.hier1 <- getPredictionSets(
+    x.query = spe.test, x.cal = spe.cal, y.cal = df.cal$Y,
+    onto = opi2, alpha = 0.1,
+    follow.ontology = TRUE,
+    return.sc = FALSE
 )
 # spe.test <- getPredictionSets(x.query=spe.test, x.cal=spe.cal,
 #                               y.cal = df.cal$Y,

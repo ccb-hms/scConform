@@ -39,7 +39,8 @@
 #' @param pr.name name of the colData variable in the returned
 #' SingleCellExperiment object that will contain the prediction
 #' sets. The default name is \code{pred.set}.
-#' @author Daniela Corbetta
+#' @param BPPARAM BiocParallel instance for parallel computing. Default is
+#' \code{SerialParam()}.
 #' @return
 #' \item{\code{return.sc = TRUE}}{the function \code{getPredictionSets} returns
 #' a SingleCellExperiment or SpatialExperiment
@@ -145,16 +146,18 @@
 #' @importFrom igraph degree
 #' @importFrom igraph distances
 #' @importFrom stats quantile
+#' @importFrom BiocParallel SerialParam
+#' @importFrom BiocParallel bplapply
 #' @export
 
-getPredictionSets <- function(
-        x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
-        lambdas = seq(0.001, 0.999, length.out = 100),
-        follow.ontology = TRUE,
-        resample.cal = FALSE,
-        labels = NULL,
-        return.sc = NULL,
-        pr.name = "pred.set") {
+getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
+    lambdas = seq(0.001, 0.999, length.out = 100),
+    follow.ontology = TRUE,
+    resample.cal = FALSE,
+    labels = NULL,
+    return.sc = NULL,
+    pr.name = "pred.set",
+    BPPARAM = SerialParam()) {
     ## Sanity checks
 
     if (follow.ontology & is.null(onto)) {
@@ -193,26 +196,13 @@ getPredictionSets <- function(
     K <- length(labels)
 
     # If input is not a matrix, retrieve prediction matrix from colData
-    # might turn this into a helper function
     if (!is.matrix(x.query)) {
-        # n.query <- ncol(x.query)
-        # p.query <- matrix(NA, nrow=n.query, ncol=K)
-        # colnames(p.query) <- labels
-        # for(i in labels){
-        #     p.query[,i] <- colData(x.query)[[i]]
-        # }
         p.query <- .retrievePredMatrix(x.query, K = K, labels = labels)
     } else {
         p.query <- x.query
     }
 
     if (!is.matrix(x.cal)) {
-        # n.cal <- ncol(x.cal)
-        # p.cal <- matrix(NA, nrow=n.cal, ncol=K)
-        # colnames(p.cal) <- labels
-        # for(i in labels){
-        #     p.cal[,i] <- colData(x.cal)[[i]]
-        # }
         p.cal <- .retrievePredMatrix(x.cal, K = K, labels = labels)
     } else {
         p.cal <- x.cal
@@ -224,7 +214,8 @@ getPredictionSets <- function(
                 p.cal = p.cal, p.test = p.query,
                 y.cal = y.cal, onto = onto,
                 alpha = alpha,
-                lambdas = lambdas
+                lambdas = lambdas,
+                BPPARAM = BPPARAM
             )
         } else {
             pred.sets <- .getConformalPredSets(
@@ -246,7 +237,8 @@ getPredictionSets <- function(
                 y.cal = data$y.cal2,
                 onto = onto,
                 alpha = alpha,
-                lambdas = lambdas
+                lambdas = lambdas,
+                BPPARAM = BPPARAM
             )
             pred.sets2 <- .getHierarchicalPredSets(
                 p.cal = data$p.cal1,
@@ -254,7 +246,8 @@ getPredictionSets <- function(
                 y.cal = data$y.cal1,
                 onto = onto,
                 alpha = alpha,
-                lambdas = lambdas
+                lambdas = lambdas,
+                BPPARAM = BPPARAM
             )
             pred.sets <- c(pred.sets1, pred.sets2)
         } else {

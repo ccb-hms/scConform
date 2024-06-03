@@ -9,24 +9,28 @@
 
 .getHierarchicalPredSets <- function(
         p.cal, p.test, y.cal, onto, alpha,
-        lambdas) {
+        lambdas, BPPARAM) {
     y.cal <- as.character(y.cal)
     # Get prediction sets for each value of lambda for all the calibration data
     j <- NULL
-    exportedFn <- c(".predSets", ".scores", ".children", ".ancestors")
-    sets <- foreach(j = lambdas, .export = exportedFn, .packages = "scConform") %dopar% {
-        lapply(
-            1:nrow(p.cal),
-            function(i) .predSets(lambda = j, pred = p.cal[i, ], onto = onto)
-        )
-    }
+    # sets <- foreach(j = lambdas, .packages = "scConform") %dopar% {
+    #     lapply(
+    #         seq_len(nrow(p.cal)),
+    #         function(i) .predSets(lambda = j, pred = p.cal[i, ], onto = onto)
+    #     )
+    # }
+    sets <- bplapply(lambdas, function(j) {
+      lapply(seq_len(nrow(p.cal)), function(i) {
+        .predSets(lambda = j, pred = p.cal[i, ], onto = onto)
+      })
+    }, BPPARAM = BPPARAM)
 
     # Get the loss table (ncal x length(lambda) table with TRUE\FALSE)
-    loss <- sapply(1:length(lambdas), function(lambda) {
-        sapply(seq_along(y.cal), function(i) {
+    loss <- vapply(seq_along(lambdas), function(lambda) {
+        vapply(seq_along(y.cal), function(i) {
             !(y.cal[i] %in% sets[[lambda]][[i]])
-        })
-    })
+        }, logical(1))
+    }, FUN.VALUE = logical(length(y.cal)))
 
     # Get lhat
     n <- nrow(loss)
@@ -82,12 +86,12 @@
     anc <- .ancestors(node = pred_class, onto = onto, include_self = TRUE)
 
     # Compute scores for all the ancestor of the predicted class
-    s <- sapply(as.character(anc), function(i) {
+    s <- vapply(as.character(anc), function(i) {
         .scores(
             pred = pred, int_node = i,
             onto = onto
         )
-    })
+    }, numeric(1))
     names(s) <- anc
 
     ## Sort them by score and if there are ties by distance to the predicted

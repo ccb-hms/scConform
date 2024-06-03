@@ -4,7 +4,7 @@
 # test data in two.
 
 resample.two <- function(p.cal, p.test, y.cal, labels) {
-    s <- sample(1:nrow(p.test), round(nrow(p.test) / 2))
+    s <- sample(seq_len(nrow(p.test)), round(nrow(p.test) / 2))
     test1 <- p.test[s, ]
     test2 <- p.test[-s, ]
 
@@ -19,14 +19,14 @@ resample.two <- function(p.cal, p.test, y.cal, labels) {
 
     idx1 <- idx2 <- NULL
     for (i in labels) {
-        cat <- which(y.cal == i)
+        category <- which(y.cal == i)
         if (!is.na(des.freq1[i])) {
-            idx.cat1 <- sample(cat, size = des.freq1[i], replace = TRUE)
-            idx1 <- c(idx1, idx.cat1)
+            idx.category1 <- sample(category, size = des.freq1[i], replace = TRUE)
+            idx1 <- c(idx1, idx.category1)
         }
         if (!is.na(des.freq2[i])) {
-            idx.cat2 <- sample(cat, size = des.freq2[i], replace = TRUE)
-            idx2 <- c(idx2, idx.cat2)
+            idx.category2 <- sample(category, size = des.freq2[i], replace = TRUE)
+            idx2 <- c(idx2, idx.category2)
         }
     }
 
@@ -38,7 +38,7 @@ resample.two <- function(p.cal, p.test, y.cal, labels) {
             p.test2 = test2,
             y.cal1 = y.cal[idx1],
             y.cal2 = y.cal[idx2],
-            idx = c(s, setdiff(1:nrow(p.test), s))
+            idx = c(s, setdiff(seq_len(nrow(p.test)), s))
         ) # index in the original data
     )
 }

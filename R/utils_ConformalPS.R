@@ -3,7 +3,7 @@
 .getConformalPredSets <- function(p.cal, p.test, y.cal, alpha) {
     # Get calibration scores (1-predicted probability for the true class)
     true <- rep(NA, dim(p.cal)[1])
-    for (i in 1:dim(p.cal)[1]) {
+    for (i in seq_len(dim(p.cal)[1])) {
         true[i] <- p.cal[i, y.cal[i]]
     }
     s <- 1 - true
@@ -15,7 +15,7 @@
 
     # Get prediction sets
     prediction_sets <- p.test >= 1 - qhat
-    pr.list <- lapply(1:nrow(prediction_sets), function(i) {
+    pr.list <- lapply(seq_len(nrow(prediction_sets)), function(i) {
         colnames(prediction_sets)[prediction_sets[i, ]]
     })
     return(pr.list)
