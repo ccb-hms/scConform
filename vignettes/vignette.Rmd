@@ -15,7 +15,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
     collapse = TRUE,
     comment = "#>"
@@ -79,83 +79,110 @@ library(BiocParallel)
 
 `%notin%` <- Negate(`%in%`)
 
-num_cores <- 2
-cl1 <- makeCluster(num_cores)
-registerDoParallel(cl1)
+# num_cores <- 2
+# cl1 <- makeCluster(num_cores)
+# registerDoParallel(cl1)
 ```
 
 
 ## Load data and cell ontology
 
-As an example, we'll load the mouse ileum Merfish data from the MerfishData Bioconductor package. Load also the cell ontology trough the ontoProc Bioc package
+As an explanatory example, we'll use the mouse ileum 
+Merfish data from the `MerfishData` Bioconductor package, segmented with Baysor.
+For the purpose of this vignette, we'll treat the data as if they were 
+single-cell data, discarding the spatial information. This is a toy example
+in which reference and query data will be subset of the same dataset. In real
+life examples, data integration is a necessary first step.
+
+Load also the cell ontology trough the `ontoProc` Bioconductor package.
+
 ```{r data}
+# Load data
 spe.baysor <- MouseIleumPetukhov2021(segmentation = "baysor")
+# Load ontology
 cl <- getOnto("cellOnto", "2023")
 ```
 
 ## Build the ontology
 
-To restrict the cell ontology to the interesting part that is related to the cell types
-that are present in our data, we need to find the corresponding tags:
-```{r tags, echo=TRUE}
+The object `cl` contains information regarding all the relationships among all
+the known cell types. The first step for our analysis is to filter the ontology
+and keep only the part related to the cell types that are present in the data.
+
+This dataset does not provide annotations with the cell ontology tags, so
+we need to browse the ontology to find the interesting tags.
+
+For more information on how to restrict the cell ontology, refer to the
+[ontoProc](https://www.bioconductor.org/packages/release/bioc/html/ontoProc.html)
+documentation.
+
+```{r tags, echo=TRUE, fig.show='hide'}
 tags <- c(
-    "CL:0009022",
-    "CL:0000236",
-    "CL:0009080",
-    "CL:1000411",
-    "CL:1000335",
-    "CL:1000326",
-    "CL:0002088",
-    "CL:0009007",
-    "CL:1000343",
-    "CL:0000669",
-    "CL:1000278",
-    "CL:0009017",
-    "CL:0000492",
-    "CL:0000625",
-    "CL:0017004"
+    "CL:0009022", #Stromal
+    "CL:0000236", #B cell
+    "CL:0009080", #Tuft
+    "CL:1000411", #Endothelial
+    "CL:1000335", #Enterocyte
+    "CL:1000326", #Goblet
+    "CL:0002088", #ICC
+    "CL:0009007", #Macrophage + DC
+    "CL:1000343", #Paneth
+    "CL:0000669", #Pericyte
+    "CL:1000278", #Smooth Muscle
+    "CL:0009017", #Stem + TA
+    "CL:0000492", #T (CD4+)
+    "CL:0000625", #T (CD8+)
+    "CL:0017004"  #Telocyte
 )
 opi <- graph_from_graphnel(onto_plot2(cl, tags))
 ```
 
-In the \texttt{opi} object, there are also instances from other ontologies (CARO and BFO). 
-Remove them and rename the vertex to have them match the annotations.
+In the \texttt{opi} object, there are also instances from other ontologies 
+(CARO and BFO) that need to be removed. 
+
+Moreover, the names of the leaf nodes of the ontology must correspond to the 
+names used for the annotation
 
 ```{r build-ontology}
+## Delete CARO and BFO instances 
 sel_ver <- V(opi)$name[c(grep("CARO", V(opi)$name), grep("BFO", V(opi)$name))]
 opi1 <- opi - sel_ver
 
 ## Rename vertex to match annotations
-V(opi1)$name[V(opi1)$name == "B\ncell\nCL:0000236"] <- "B cell"
-V(opi1)$name[V(opi1)$name == "endothelial\ncell of Peyer's patch\nCL:1000411"] <- "Endothelial"
-V(opi1)$name[V(opi1)$name == "enterocyte\nof epithelium of intestinal villus\nCL:1000335"] <- "Enterocyte"
-V(opi1)$name[V(opi1)$name == "ileal\ngoblet cell\nCL:1000326"] <- "Goblet"
-V(opi1)$name[V(opi1)$name == "interstitial\ncell of Cajal\nCL:0002088"] <- "ICC"
-V(opi1)$name[V(opi1)$name == "gastrointestinal\ntract (lamina propria) macrophage of small intestine\nCL:0009007"] <- "Macrophage + DC"
-V(opi1)$name[V(opi1)$name == "paneth\ncell of epithelium of small intestine\nCL:1000343"] <- "Paneth"
-V(opi1)$name[V(opi1)$name == "pericyte\nCL:0000669"] <- "Pericyte"
-V(opi1)$name[V(opi1)$name == "smooth\nmuscle fiber of ileum\nCL:1000278"] <- "Smooth Muscle"
-V(opi1)$name[V(opi1)$name == "intestinal\ncrypt stem cell of small intestine\nCL:0009017"] <- "Stem + TA"
-V(opi1)$name[V(opi1)$name == "stromal\ncell of lamina propria of small intestine\nCL:0009022"] <- "Stromal"
-V(opi1)$name[V(opi1)$name == "CD4-positive\nhelper T cell\nCL:0000492"] <- "T (CD4+)"
-V(opi1)$name[V(opi1)$name == "CD8-positive,\nalpha-beta T cell\nCL:0000625"] <- "T (CD8+)"
-V(opi1)$name[V(opi1)$name == "telocyte\nCL:0017004"] <- "Telocyte"
-V(opi1)$name[V(opi1)$name == "tuft\ncell of small intestine\nCL:0009080"] <- "Tuft"
+V(opi1)$name[grep("CL:0000236", V(opi1)$name)] <- "B cell"
+V(opi1)$name[grep("CL:1000411", V(opi1)$name)] <- "Endothelial"
+V(opi1)$name[grep("CL:1000335", V(opi1)$name)] <- "Enterocyte"
+V(opi1)$name[grep("CL:1000326", V(opi1)$name)] <- "Goblet"
+V(opi1)$name[grep("CL:0002088", V(opi1)$name)] <- "ICC"
+V(opi1)$name[grep("CL:0009007", V(opi1)$name)] <- "Macrophage + DC"
+V(opi1)$name[grep("CL:1000343", V(opi1)$name)] <- "Paneth"
+V(opi1)$name[grep("CL:0000669", V(opi1)$name)] <- "Pericyte"
+V(opi1)$name[grep("CL:1000278", V(opi1)$name)] <- "Smooth Muscle"
+V(opi1)$name[grep("CL:0009017", V(opi1)$name)] <- "Stem + TA"
+V(opi1)$name[grep("CL:0009022", V(opi1)$name)] <- "Stromal"
+V(opi1)$name[grep("CL:0000492", V(opi1)$name)] <- "T (CD4+)"
+V(opi1)$name[grep("CL:0000625", V(opi1)$name)] <- "T (CD8+)"
+V(opi1)$name[grep("CL:0017004", V(opi1)$name)] <- "Telocyte"
+V(opi1)$name[grep("CL:0009080", V(opi1)$name)] <- "Tuft"
 
-## Add the edge from connective tissue cell and telocyte and delete useless nodes
+## Add the edge from connective tissue cell and telocyte and delete redundant 
+## nodes
 opi1 <- add_edges(opi1, c("connective\ntissue cell\nCL:0002320", "Telocyte"))
 gr <- as_graphnel(opi1)
 opi2 <- opi1 - c(
     "somatic\ncell\nCL:0002371", "contractile\ncell\nCL:0000183",
     "native\ncell\nCL:0000003"
 )
+
 gr1 <- as_graphnel(opi2)
+
+## Plot the final ontology
 plot(gr1, attrs = list(node = list(fontsize = 27)))
 ```
 
 ## Preprocess data
 
-Modify the colData variable "leiden_final" to unify B cells and enterocytes
+Modify the colData variable `leiden_final` to unify B cells and enterocytes
 
 ```{r preprocess}
 spe.baysor$cell_type <- spe.baysor$leiden_final
@@ -171,132 +198,207 @@ spe.baysor <- spe.baysor[, spe.baysor$cell_type %notin% c(
 spe.baysor
 ```
 
-## Fit model
-Fit a multinomial model with a random sample of 500 cells using the 50 HVGs.
+Now split randomly the data into reference and query data. 
+```{r}
+set.seed(1635)
+ref <- sample(1:ncol(spe.baysor), 1500)
+
+spe.ref <- spe.baysor[,ref]
+spe.query <- spe.baysor[,-ref]
+```
+
+
+## Fit a classification model
+
+We now need to build a classification model. To this aim, we'll draw a random
+sample of 500 cells from the reference data, and train a multinomial
+model on those. As explanatory variables we'll use the 50 most variable genes.
+For this step, every statistical model or machine learning method can be used,
+as long as it provides also estimated probabilities for each class.
+
 ```{r model, warning=FALSE}
-# get. HVGs
-spe.baysor <- logNormCounts(spe.baysor)
-v <- modelGeneVar(spe.baysor)
+# Randomly select 500 cells
+set.seed(1703)
+train <- sample(1:ncol(spe.ref), 500)
+# Training data
+spe.train <- spe.ref[,train]
+
+# get HVGs
+spe.train <- logNormCounts(spe.train)
+v <- modelGeneVar(spe.train)
 hvg <- getTopHVGs(v, n = 50)
 
-# Extract counts and construct df
-df <- as.data.frame(t(as.matrix(counts(spe.baysor[hvg, ]))))
-df$Y <- spe.baysor$cell_type
-set.seed(1703)
-train <- sample(1:nrow(df), 500)
-df.train <- df[train, ]
+# Extract counts and convert data into a data.frame format
+df.train <- as.data.frame(t(as.matrix(counts(spe.train[hvg, ]))))
+df.train$Y <- spe.train$cell_type
 table(df.train$Y)
 
-# Fit model
+# Fit multinomial model
 fit <- vglm(Y ~ .,
     family = multinomial(refLevel = "B cell"),
     data = df.train
 )
-df.other <- df[-train, ]
-spe.other <- spe.baysor[, -train]
 ```
 
-# Prediction sets
+# Method 1: standard conformal inference
 
-Split data randomly in calibration and query data
-```{r splitdata}
-# split data
-set.seed(1237)
-cal <- sample(1:nrow(df.other), 1000)
-df.cal <- df.other[cal, ]
-df.test <- df.other[-cal, ]
-```
+## Algorithm
 
+As anticipated in the introduction, the first method uses split conformal
+inference to build the prediction sets. It requires to split the reference data
+into two subsets:
+
+- training set: portion of the reference data to be used to build a classifier
+$\hat{f}$ (the multinomial model in our example)
+- calibration set: portion of the reference data to be used to calibrate the 
+procedure.
+
+Given $\hat{f}$ and the calibration data, the objective of conformal inference 
+is to build, for a new non-annotated cell $X_{new}$, a prediction set 
+$C(X_{new})$ that satisfies
+$$
+P(Y_{new} \in C(X_{n+1})) \geq 1-\alpha,
+$$
+where $Y_{new}$ is the true label of the new cell and $\alpha$ is a user-chosen 
+error level. The algorithm for split conformal inference is the following:
+
+1. For the data in the calibration set, $(X_1, Y_1), \dots, (X_n, Y_n),$ obtain
+the conformal scores $s_1=1-\hat{f}(X_i)_{Y_i}$ (i.e. 1 minus the estimated
+probability that the model is assigning to the true label of the $i$-th cell).
+These scores will be high when the model is assigning a small probability to the 
+true class, and low otherwise.
+
+2. Obtain $\hat{q}$ as the $\lceil(1-\alpha)(n+1)\rceil/n$ empirical quantile of
+the conformal scores.
+
+3. Finally, for a new cell $X_{new}$, build a prediction set by including all 
+the classes or which the estimated probability is higher than $1-\hat{q}$:
+$$
+C(X_{new}) = \left\{y: \hat{f}(X_{n+1})_y\geq 1-\hat{q}\right\}
+$$
 
 ## Obtain prediction matrices
 
-The first step to build conformal prediction sets is to obtain prediction matrices
-for data in the calibration data and in the query data. Each row of the matrix 
-correspons to a particular cell, while each row to a different cell type. The entry
-$p_{i,j}$ of the matrix indicates the estimated probability that the cell $i$ is
-of type $j$.
+The first step to build conformal prediction sets is to obtain prediction 
+matrices for data in the calibration data and in the query data. 
+Each row of the matrix corresponds to a particular cell, while each row to a 
+different cell type. The entry $p_{i,j}$ of the matrix indicates the estimated 
+probability that the cell $i$ is of type $j$.
+
 ```{r predictions, warning=FALSE}
+spe.cal <- spe.ref[,-train]
 # Prediction matrix for calibration data
+df.cal <- as.data.frame(t(as.matrix(counts(spe.cal[hvg, ]))))
 p.cal <- predict(fit, newdata = df.cal, type = "response")
 # Prediction matrix for query data
+df.test <- as.data.frame(t(as.matrix(counts(spe.query[hvg, ]))))
 p.test <- predict(fit, newdata = df.test, type = "response")
 ```
 
 
 ## Obtain conformal prediction sets
 
-We can now directly call the \texttt{getPredictionSet} function by using as input the
+We can now directly call the `getPredictionSet` function by using as input the
 prediction matrices for the calibration and the query dataset. In this case, the 
-output of the function will be a list whose elements are the prediction sets for each query cell.
-By setting \texttt{follow_ontology=FALSE}, we are asking the function to return
-prediction sets obtained via standard conformal inference.
+output of the function will be a list whose elements are the prediction sets for 
+each query cell.
+By setting `follow_ontology=FALSE`, we are asking the function to return
+prediction sets obtained via split conformal inference.
+The parameter `onto` is not necessary with this method, but if the ontology is
+provided then it will be used by the function to retrieve the considered cell 
+types. Alternatively, we can explicitly provide the labels with the
+parameter `labels`.
 
 ```{r predsets}
 sets <- getPredictionSets(
-    x.query = p.test, x.cal = p.cal, y.cal = df.cal$Y,
+    x.query = p.test, x.cal = p.cal, y.cal = spe.cal$cell_type,
     onto = opi2, alpha = 0.1,
     follow.ontology = FALSE
 )
+
+# Check coverage
+cvg <- rep(NA, length(sets))
+for(i in seq_len(length(sets)))
+  cvg[i] <- spe.query$cell_type[i] %in% sets[[i]]
+mean(cvg)
 ```
 
-As an alternative, we can provide as input a SingleCellExperiment object. In this case,
-it needs to have in the colData the estimated probabilities for each cell type.
-The names of these colData have to correspond to the names of the leaf nodes in the
-ontology. Let's create the two separate SingleCellExperiment objects and add the predictions to the colData.
+As an alternative, we can provide as input a `SingleCellExperiment` object. 
+In this case, it needs to have the estimated probabilities for 
+each cell type in the `colData`.
+The names of these `colData` have to correspond to the names of the leaf nodes 
+in the ontology. 
 
-```{r predsets-sc, eval=FALSE}
-# Create the SingleCellExperiment objects
-spe.cal <- spe.other[, cal]
-spe.test <- spe.other[, -cal]
+The output will be a `SingleCellExperiment` object with a new variable in the 
+`colData` containing the prediction sets. The name of this variable can
+be assigned trough the `pr.name` parameter.
 
+```{r predsets-sc}
 # Retrieve labels as leaf nodes of the ontology
 labels <- V(opi2)$name[degree(opi2, mode = "out") == 0]
 
 # Create corresponding colData
 for (i in labels) {
     colData(spe.cal)[[i]] <- p.cal[, i]
-    colData(spe.test)[[i]] <- p.test[, i]
+    colData(spe.query)[[i]] <- p.test[, i]
 }
 
 # Create prediction sets
-
-#### Modify y.cal
-spe.test <- getPredictionSets(
-    x.query = spe.test, x.cal = spe.cal, y.cal = df.cal$Y,
+spe.query <- getPredictionSets(
+    x.query = spe.query, x.cal = spe.cal, y.cal = spe.cal$cell_type,
     onto = opi2, alpha = 0.1,
-    follow.ontology = FALSE
+    follow.ontology = FALSE,
+    pr.name = "pred_set"
 )
-
-spe.test <- getPredictionSets(
-    x.query = spe.test, x.cal = spe.cal, y.cal = df.cal$Y,
-    onto = opi2, alpha = 0.1,
-    follow.ontology = TRUE,
-    pr.name = "pred.set.hier"
-)
-
-spe.test.hier1 <- getPredictionSets(
-    x.query = spe.test, x.cal = spe.cal, y.cal = df.cal$Y,
-    onto = opi2, alpha = 0.1,
-    follow.ontology = TRUE,
-    return.sc = FALSE
-)
-# spe.test <- getPredictionSets(x.query=spe.test, x.cal=spe.cal,
-#                               y.cal = df.cal$Y,
-#                               onto = opi2, alpha = 0.1,
-#                               follow.ontology = FALSE, resample.cal = TRUE)
-
-# head(colData(spe.test))
-# l <- sapply(sets, length)
-# l.bis <- sapply(spe.test$pred.set, length)
-# mean(l)
-# mean(l.bis)
-# barplot(table(l.bis))
-
-# l.onto <- sapply(sets.onto, length)
-# mean(l.onto)
 ```
 
+# Method 2: exploit the cell ontology
+
+## Algorithm
+
+Let $\hat{y}(x)$ be the class with the maximum estimated probaility. Moreover,
+given a directed graph let $\mathcal{P}(v)$ and $\mathcal{A}(v)$ be the set
+of children nodes and ancestor nodes of $v$, respectively. Finally, for each 
+node $v$ define a score $g(v,x)$ as the sum of the predicted probabilities of
+the leaf nodes that are children of $v$. We build the sets as follows:
+
+$$
+\mathcal{P}(v) \cup \{\mathcal{P}(a): a\in\mathcal{A}(\hat{y}(x)): 
+g(a,x)\leq\lambda \},
+$$
+where $v:v\in \mathcal{A}(\hat{y}(x)), \;g(v,x)\geq\lambda,\; v=\arg\min_{u:g(u,x)\geq\lambda}g(u,x)$
+
+In words, we start from the predicted class and we go up in the graph until we 
+find an ancestor of $\hat{y}(x)$ that has a score that is at least $\lambda$
+and include in the prediction sets all its children. Then we add to this 
+subgraph the other ones that contain $\hat{y}(x)$ for which the score is less 
+than $\lambda$. To choose $\lambda$, we follow eq. (4) in Anastasios et al. 
+(2022), considering the miscoverage as loss function.
+
+## Obtain hierarchical prediction sets
+
+To switch to the hierarchical algorithm, we just need to set 
+`follow.ontology=TRUE`.
+
+```{r predset-hier}
+spe.query <- getPredictionSets(
+    x.query = spe.query, x.cal = spe.cal, y.cal = spe.cal$cell_type,
+    onto = opi2, alpha = 0.1,
+    follow.ontology = TRUE,
+    pr.name = "pred_set_hier",
+    BPPARAM = MulticoreParam(workers = 4)
+)
+
+# Check coverage
+cvg1<- rep(NA, length(spe.query$pred_set_hier))
+for(i in seq_len(length(spe.query$pred_set_hier)))
+  cvg1[i] <- spe.query$cell_type[i] %in% spe.query$pred_set_hier[[i]]
+mean(cvg1)
+```
+
+
 ***
+
 
 ## R.session Info
 
