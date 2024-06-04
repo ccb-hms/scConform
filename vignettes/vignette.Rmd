@@ -59,6 +59,7 @@ $P(Y_{new} \in C(X_{new})) \geq 1-\alpha$.
 
 # Installation
 
+To install
 
 # Preliminaries
 
@@ -386,7 +387,7 @@ spe.query <- getPredictionSets(
     onto = opi2, alpha = 0.1,
     follow.ontology = TRUE,
     pr.name = "pred_set_hier",
-    BPPARAM = MulticoreParam(workers = 4)
+    BPPARAM = MulticoreParam(workers = 2)
 )
 
 # Check coverage
@@ -396,11 +397,20 @@ for(i in seq_len(length(spe.query$pred_set_hier)))
 mean(cvg1)
 ```
 
+```{r}
+spe.query <- getPredictionSets(
+    x.query = spe.query, x.cal = spe.cal, y.cal = spe.cal$cell_type,
+    onto = opi2, alpha = 0.1,
+    follow.ontology = TRUE,
+    pr.name = "pred_set_hier_simp",
+    BPPARAM = MulticoreParam(workers = 2),
+    simplify.pred = TRUE
+)
+colData(spe.query)
+```
 
-***
 
-
-## R.session Info
+# R.session Info
 
 ```{r SessionInfo, echo=FALSE, message=FALSE, warning=FALSE, comment=NA}
 sessionInfo()

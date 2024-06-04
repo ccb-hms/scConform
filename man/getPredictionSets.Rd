@@ -16,6 +16,7 @@ getPredictionSets(
   labels = NULL,
   return.sc = NULL,
   pr.name = "pred.set",
+  simplify.pred = FALSE,
   BPPARAM = SerialParam()
 )
 }
@@ -62,6 +63,10 @@ SpatialExperiment object and to \code{FALSE} when \code{x.query} is a matrix.}
 \item{pr.name}{name of the colData variable in the returned
 SingleCellExperiment object that will contain the prediction
 sets. The default name is \code{pred.set}.}
+
+\item{simplify.pred}{if \code{TRUE}, the output will be the common ancestor
+of the labels inserted into the prediction set. If \code{FALSE} (default),
+the output will be the set of the leaf labels.}
 
 \item{BPPARAM}{BiocParallel instance for parallel computing. Default is
 \code{SerialParam()}.}

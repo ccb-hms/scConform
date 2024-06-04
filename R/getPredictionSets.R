@@ -39,6 +39,9 @@
 #' @param pr.name name of the colData variable in the returned
 #' SingleCellExperiment object that will contain the prediction
 #' sets. The default name is \code{pred.set}.
+#' @param simplify.pred if \code{TRUE}, the output will be the common ancestor
+#' of the labels inserted into the prediction set. If \code{FALSE} (default),
+#' the output will be the set of the leaf labels.
 #' @param BPPARAM BiocParallel instance for parallel computing. Default is
 #' \code{SerialParam()}.
 #' @return
@@ -139,15 +142,11 @@
 #'     return.sc = FALSE
 #' )
 #'
-#' @importFrom foreach %dopar%
-#' @importFrom foreach foreach
-#' @importFrom SummarizedExperiment colData
-#' @importFrom igraph V
-#' @importFrom igraph degree
-#' @importFrom igraph distances
+#' @importFrom foreach %dopar% foreach
+#' @importFrom SummarizedExperiment colData colData<-
+#' @importFrom igraph V distances degree
 #' @importFrom stats quantile
-#' @importFrom BiocParallel SerialParam
-#' @importFrom BiocParallel bplapply
+#' @importFrom BiocParallel SerialParam bplapply
 #' @export
 
 getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
@@ -157,6 +156,7 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
     labels = NULL,
     return.sc = NULL,
     pr.name = "pred.set",
+    simplify.pred = FALSE,
     BPPARAM = SerialParam()) {
     ## Sanity checks
 
@@ -187,6 +187,9 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
                  (return.sc=FALSE)")
         }
     }
+
+    if(!follow.ontology & simplify.pred)
+        stop("If follow.ontology=FALSE, please set simplify.pred=FALSE")
 
     # Retrieve labels from the ontology (need to add retrieval from y.cal/data
     # when follow.ontology=FALSE)
@@ -267,6 +270,18 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
         }
         # Order the prediction set
         pred.sets <- pred.sets[order(data$idx)]
+    }
+
+    ## Transform prediction with leaf nodes to prediction sets with the
+    ## common ancestor
+    if (simplify.pred){
+        pred.sets1 <- sapply(pred.sets,
+                             function(x) .returnCommonAncestor(x, onto))
+        ## Check for ramification
+        for(i in seq_len(length(pred.sets1))){
+            if(length(.children(pred.sets1[[i]], onto))==length(pred.sets[[i]]))
+                pred.sets[[i]] <- pred.sets1[[i]]
+        }
     }
 
     # if not specified, return a sc object if the input was a sc object,
