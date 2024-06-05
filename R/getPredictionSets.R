@@ -1,11 +1,10 @@
 #' @title Get conformal prediction sets
-#' @description Let K be the total number of distinct cell type labels and n, m
-#' the number of cells in the calibration and in the test data, respectively.
-#' This function takes as input two matrices: a matrix \code{n x K} and
-#' a matrix \code{m x K} with the estimated
-#' probabilities for each cell in the calibration and in the test data,
-#' respectively. It returns a list with the prediction sets for each cell in
-#' the test data.
+#' @description This function returns prediction sets for the cell
+#' type of cells in a SingleCellExperiment objects.
+#' It implements two methods: the first one uses standard conformal inference,
+#' while the second one conformal risk control (see details). The output is
+#' either a SingleCellExperiment object with the prediction sets in the colData
+#' or a list.
 #'
 #' @param x.query query data for which we want to build prediction sets. Could
 #' be either a SingleCellExperiment object with the estimated probabilities for
@@ -71,7 +70,7 @@
 #' The only assumption is that the test data and the calibration data are
 #' exchangeable. The algorithm of split conformal inference is the following:
 #' \enumerate{
-#'   \item For the data in the calibration set, \eqn{(Y_1,X_1),\dots, (Y_n,X_n)}
+#'   \item For the data in the calibration set, \eqn{(X_1,Y_1),\dots, (X_n,Y_n)}
 #'   , obtain the \emph{conformal scores}, \eqn{s_i=1-\hat{f}(X_i)_{Y_i},
 #'   \;i=1,\dots,n}. These scores will be high when the model is assigning a
 #'   small probability to the true class, and low otherwise.
@@ -97,10 +96,10 @@
 #' In words, we start from the predicted class and we go up in the graph until
 #' we find an ancestor of \eqn{\hat{y}(x)} that has a score that is at least
 #' \eqn{\lambda} and include in the prediction sets all its children.
-#' To ensure that the sets are nested, to this subgraph we add all the other
+#' For theoretical reasons, to this subgraph we add all the other
 #' ones that contain \eqn{\hat{y}(x)} for which the score is less than
 #' \eqn{\lambda}. To choose \eqn{\lambda}, we follow eq. (4) in Anastasios et
-#' al. (2022), considering the miscoverage as loss function. In this way, it is
+#' al. (2023), considering the miscoverage as loss function. In this way, it is
 #' still guaranteed that
 #' \deqn{P(Y_{n+1}\notin C_\lambda (X_{n+1})) \leq \alpha.}}
 #' @references For an introduction to conformal prediction, see
@@ -109,7 +108,7 @@
 #' arXiv preprint arXiv:2107.07511 (2021).
 #' For reference on conformal risk control, see
 #' Angelopoulos, Anastasios N., et al. "Conformal risk control."
-#' arXiv preprint arXiv:2208.02814 (2022).
+#' arXiv preprint arXiv:2208.02814 (2023).
 #' @examples
 #' # random p matrix
 #' set.seed(1040)
@@ -276,7 +275,7 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
     ## common ancestor
     if (simplify.pred){
         pred.sets1 <- sapply(pred.sets,
-                             function(x) .returnCommonAncestor(x, onto))
+                             function(x) returnCommonAncestor(x, onto))
         ## Check for ramification
         for(i in seq_len(length(pred.sets1))){
             if(length(.children(pred.sets1[[i]], onto))==length(pred.sets[[i]]))

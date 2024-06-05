@@ -118,12 +118,3 @@
     return(Reduce(union, selected))
 }
 
-# Function to return the common ancestor instead of the single leaf nodes
-.returnCommonAncestor <- function(pred.set, onto){
-  com.anc <- Reduce(intersect, lapply(pred.set, function(node) {
-    .ancestors(node, onto)
-  }))
-  root <- V(onto)$name[degree(onto, mode = "in") == 0]
-  first.anc <- com.anc[which.max(distances(onto, v = com.anc, to = root))]
-  return(first.anc)
-}
