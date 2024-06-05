@@ -74,7 +74,7 @@ devtools::install_github("ccb-hms/scConform")
 ## Load useful libraries
 
 ```{r libraries, message=FALSE}
-# library(scConform)
+library(scConform)
 library(SingleCellExperiment)
 library(VGAM)
 library(foreach)

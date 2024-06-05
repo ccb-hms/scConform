@@ -11,6 +11,7 @@
 #' @param title title of the plot
 #' @param add.scores boolean. If \code{TRUE}, estimated probabilities are
 #' added to the name of the classes
+#' @param ... general commands to be sent to plot
 #' @return a plot of the ontology with the considered classes colored
 #' @importFrom grDevices colorRampPalette
 #' @importFrom igraph as_graphnel

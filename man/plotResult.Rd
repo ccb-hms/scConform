@@ -33,6 +33,8 @@ plotResult(
 
 \item{add.scores}{boolean. If \code{TRUE}, estimated probabilities are
 added to the name of the classes}
+
+\item{...}{general commands to be sent to plot}
 }
 \value{
 a plot of the ontology with the considered classes colored
