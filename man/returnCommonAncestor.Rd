@@ -21,6 +21,7 @@ ontology and returns the common ancestor of the labels in the prediction set.
 It is useful when using hierarchical
 }
 \examples{
+library(igraph)
 # Let's build a random ontology
 onto <- graph_from_literal(animal-+dog:cat, cat-+british:persian,
 dog-+cocker:retriever, retriever-+golden:labrador)

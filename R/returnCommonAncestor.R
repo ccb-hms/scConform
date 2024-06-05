@@ -8,6 +8,7 @@
 #' @return the common ancestor of the labels in \code{pred.set}, according to
 #' the ontology \code{onto}
 #' @examples
+#' library(igraph)
 #' # Let's build a random ontology
 #' onto <- graph_from_literal(animal-+dog:cat, cat-+british:persian,
 #' dog-+cocker:retriever, retriever-+golden:labrador)
