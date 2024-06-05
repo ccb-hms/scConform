@@ -135,7 +135,7 @@ we find an ancestor of \eqn{\hat{y}(x)} that has a score that is at least
 \eqn{\lambda} and include in the prediction sets all its children.
 For theoretical reasons, to this subgraph we add all the other
 ones that contain \eqn{\hat{y}(x)} for which the score is less than
-\eqn{\lambda}. To choose \eqn{\lambda}, we follow eq. (4) in Anastasios et
+\eqn{\lambda}. To choose \eqn{\lambda}, we follow eq. (4) in Angelopoulus et
 al. (2023), considering the miscoverage as loss function. In this way, it is
 still guaranteed that
 \deqn{P(Y_{n+1}\notin C_\lambda (X_{n+1})) \leq \alpha.}}

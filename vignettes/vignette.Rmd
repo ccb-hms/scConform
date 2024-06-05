@@ -63,14 +63,18 @@ $P(Y_{new} \in C(X_{new})) \geq 1-\alpha$.
 
 # Installation
 
-To install
+To install it
+```{r, eval=FALSE}
+devtools::install_github("ccb-hms/scConform")
+```
+
 
 # Preliminaries
 
 ## Load useful libraries
 
 ```{r libraries, message=FALSE}
-library(scConform)
+# library(scConform)
 library(SingleCellExperiment)
 library(VGAM)
 library(foreach)
@@ -174,10 +178,14 @@ opi2 <- opi1 - c(
     "native\ncell\nCL:0000003"
 )
 
+
+V(opi2)$name <- trimws(gsub("CL:.*|\\n", " ", V(opi2)$name))
+
 gr1 <- as_graphnel(opi2)
 
 ## Plot the final ontology
-plot(gr1, attrs = list(node = list(fontsize = 27)))
+attrs <- list(node=list(shape="box", fontsize=15, fixedsize=FALSE))
+plot(gr1, attrs = attrs)
 ```
 
 ## Preprocess data
@@ -302,7 +310,7 @@ We can now directly call the `getPredictionSet` function by using as input the
 prediction matrices for the calibration and the query dataset. In this case, the 
 output of the function will be a list whose elements are the prediction sets for 
 each query cell.
-By setting `follow_ontology=FALSE`, we are asking the function to return
+By setting `follow.ontology=FALSE`, we are asking the function to return
 prediction sets obtained via split conformal inference.
 The parameter `onto` is not necessary with this method, but if the ontology is
 provided then it will be used by the function to retrieve the considered cell 
@@ -372,7 +380,8 @@ In words, we start from the predicted class and we go up in the graph until we
 find an ancestor of $\hat{y}(x)$ that has a score that is at least $\lambda$
 and include in the prediction sets all its children. Then we add to this 
 subgraph the other ones that contain $\hat{y}(x)$ for which the score is less 
-than $\lambda$. To choose $\lambda$, we follow eq. (4) in Anastasios et al. 
+than $\lambda$. To choose $\lambda$, we follow eq. (4) in 
+[Angelopoulus et al., 2023](https://arxiv.org/abs/2208.02814) 
 (2022), considering the miscoverage as loss function.
 
 ## Obtain hierarchical prediction sets
@@ -403,14 +412,63 @@ directly in the function by setting `simplify.pred=TRUE`.
 Alternatively, we can convert the obtained prediction sets invoking
 the function `returnCommonAncestor`.
 
-```{r}
+```{r common-ancestor}
 spe.query$pred_set_hier_simp <- sapply(spe.query$pred_set_hier,
                              function(x) returnCommonAncestor(x, opi2))
 
 ```
 
+# Visualization
 
-# R.session Info
+Let's now visualize the obtained prediction sets. The simplest way is to just
+ask to color the labels included in the prediction set. Let's compare 
+the prediction sets for one cell obtained with the two methods
+
+```{r}
+plotResult(spe.query$pred_set[[64]], opi2, 
+           col.grad="pink", attrs=attrs, add.scores = FALSE,
+           title="Conformal Prediction set")
+```
+
+```{r}
+plotResult(spe.query$pred_set_hier[[64]], opi2,
+           col.grad="pink", attrs=attrs, add.scores = FALSE,
+           title="Hierarchical prediction set")
+```
+
+We can now instead give as input also the estimated probabilities and a 
+gradient. The function will color the cells according to the gradient, with 
+stronger colors corresponding to higher probabilities.
+
+```{r}
+plotResult(spe.query$pred_set[[64]], opi2, probs=p.test[64,],
+           col.grad=c("lemonchiffon", "orange", "darkred"), 
+           attrs=attrs, add.scores = FALSE,
+           title="Conformal Prediction set")
+```
+```{r}
+plotResult(spe.query$pred_set_hier[[64]], opi2, probs=p.test[64,],
+           col.grad=c("lemonchiffon", "orange", "darkred"), 
+           attrs=attrs, add.scores = FALSE,
+           title="Hierarchical Prediction set")
+```
+
+Lastly, we can explicitly add to the labels the estimated probabilities
+```{r}
+plotResult(spe.query$pred_set[[64]], opi2, probs=p.test[64,],
+           col.grad=c("lemonchiffon", "orange", "darkred"), 
+           attrs=attrs, add.scores = TRUE, k=2,
+           title="Conformal Prediction set")
+```
+```{r}
+plotResult(spe.query$pred_set_hier[[64]], opi2, probs=p.test[64,],
+           col.grad=c("lemonchiffon", "orange", "darkred"), 
+           attrs=attrs, add.scores = TRUE, k=2,
+           title="Hierarchical Prediction set")
+```
+
+
+# R.session Info {.unnumbered}
 
 ```{r SessionInfo, echo=FALSE, message=FALSE, warning=FALSE, comment=NA}
 sessionInfo()
