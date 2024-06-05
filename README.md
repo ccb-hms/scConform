@@ -4,7 +4,7 @@
 The package can then be installed via:
 
 ```
-devtools::install_github("DanielaCorbetta/scConform")
+devtools::install_github("ccb-hms/scConform")
 ```
 
 Load the library.
