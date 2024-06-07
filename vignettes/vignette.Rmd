@@ -141,7 +141,7 @@ tags <- c(
 opi <- graph_from_graphnel(onto_plot2(cl, tags))
 ```
 
-In the \texttt{opi} object, there are also instances from other ontologies 
+In the `opi` object, there are also instances from other ontologies 
 (CARO and BFO) that need to be removed. 
 
 Moreover, the names of the leaf nodes of the ontology must correspond to the 
@@ -204,6 +204,7 @@ spe.baysor <- spe.baysor[, spe.baysor$cell_type %notin% c(
     "Myenteric Plexus"
 )]
 spe.baysor
+table(spe.baysor$cell_type)
 ```
 
 Now split randomly the data into reference and query data. 
@@ -213,6 +214,8 @@ ref <- sample(1:ncol(spe.baysor), 1500)
 
 spe.ref <- spe.baysor[,ref]
 spe.query <- spe.baysor[,-ref]
+spe.ref
+spe.query
 ```
 
 
@@ -230,6 +233,7 @@ set.seed(1703)
 train <- sample(1:ncol(spe.ref), 500)
 # Training data
 spe.train <- spe.ref[,train]
+spe.train
 
 # get HVGs
 spe.train <- logNormCounts(spe.train)
@@ -287,8 +291,9 @@ $$
 
 ## Obtain prediction matrices
 
-The first step to build conformal prediction sets is to obtain prediction 
-matrices for data in the calibration data and in the query data. 
+The first step to build conformal prediction sets is to obtain 
+matrices with the estimated probabilities for each cell type for cells in the 
+calibration data and in the query data. 
 Each row of the matrix corresponds to a particular cell, while each row to a 
 different cell type. The entry $p_{i,j}$ of the matrix indicates the estimated 
 probability that the cell $i$ is of type $j$.
@@ -298,9 +303,11 @@ spe.cal <- spe.ref[,-train]
 # Prediction matrix for calibration data
 df.cal <- as.data.frame(t(as.matrix(counts(spe.cal[hvg, ]))))
 p.cal <- predict(fit, newdata = df.cal, type = "response")
+head(round(p.cal, 3))
 # Prediction matrix for query data
 df.test <- as.data.frame(t(as.matrix(counts(spe.query[hvg, ]))))
 p.test <- predict(fit, newdata = df.test, type = "response")
+head(round(p.test, 3))
 ```
 
 
@@ -310,6 +317,7 @@ We can now directly call the `getPredictionSet` function by using as input the
 prediction matrices for the calibration and the query dataset. In this case, the 
 output of the function will be a list whose elements are the prediction sets for 
 each query cell.
+
 By setting `follow.ontology=FALSE`, we are asking the function to return
 prediction sets obtained via split conformal inference.
 The parameter `onto` is not necessary with this method, but if the ontology is
@@ -318,11 +326,17 @@ types. Alternatively, we can explicitly provide the labels with the
 parameter `labels`.
 
 ```{r predsets}
+labels <- colnames(p.test)
 sets <- getPredictionSets(
-    x.query = p.test, x.cal = p.cal, y.cal = spe.cal$cell_type,
-    onto = opi2, alpha = 0.1,
-    follow.ontology = FALSE
+    x.query = p.test, 
+    x.cal = p.cal, 
+    y.cal = spe.cal$cell_type,
+    alpha = 0.1,
+    follow.ontology = FALSE,
+    labels = labels
 )
+
+sets[1:6]
 
 # Check coverage
 cvg <- rep(NA, length(sets))
@@ -353,11 +367,18 @@ for (i in labels) {
 
 # Create prediction sets
 spe.query <- getPredictionSets(
-    x.query = spe.query, x.cal = spe.cal, y.cal = spe.cal$cell_type,
-    onto = opi2, alpha = 0.1,
+    x.query = spe.query, 
+    x.cal = spe.cal, 
+    y.cal = spe.cal$cell_type,
+    alpha = 0.1,
     follow.ontology = FALSE,
-    pr.name = "pred_set"
+    pr.name = "pred_set",
+    labels = labels
 )
+
+spe.query
+
+head(spe.query$pred_set)
 ```
 
 # Method 2: exploit the cell ontology
@@ -387,12 +408,18 @@ than $\lambda$. To choose $\lambda$, we follow eq. (4) in
 ## Obtain hierarchical prediction sets
 
 To switch to the hierarchical algorithm, we just need to set 
-`follow.ontology=TRUE`.
+`follow.ontology=TRUE` and provide an ontology to the `onto` parameter.
+As in the previous case, if the input is a `SingleCellExperiment` object then 
+the output will be again a `SingleCellExperiment` object with a new variable
+containing the prediction sets in the colData.
 
 ```{r predset-hier}
 spe.query <- getPredictionSets(
-    x.query = spe.query, x.cal = spe.cal, y.cal = spe.cal$cell_type,
-    onto = opi2, alpha = 0.1,
+    x.query = spe.query, 
+    x.cal = spe.cal, 
+    y.cal = spe.cal$cell_type,
+    onto = opi2, 
+    alpha = 0.1,
     follow.ontology = TRUE,
     pr.name = "pred_set_hier",
     BPPARAM = MulticoreParam(workers = 2),
@@ -404,6 +431,10 @@ cvg1<- rep(NA, length(spe.query$pred_set_hier))
 for(i in seq_len(length(spe.query$pred_set_hier)))
   cvg1[i] <- spe.query$cell_type[i] %in% spe.query$pred_set_hier[[i]]
 mean(cvg1)
+
+spe.query
+
+head(spe.query$pred_set_hier)
 ```
 
 As an alternative, we can choose to return, instead of the set of all the labels
@@ -415,7 +446,7 @@ the function `returnCommonAncestor`.
 ```{r common-ancestor}
 spe.query$pred_set_hier_simp <- sapply(spe.query$pred_set_hier,
                              function(x) returnCommonAncestor(x, opi2))
-
+head(spe.query$pred_set_hier_simp)
 ```
 
 # Visualization

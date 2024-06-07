@@ -157,6 +157,7 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
     pr.name = "pred.set",
     simplify.pred = FALSE,
     BPPARAM = SerialParam()) {
+
     ## Sanity checks
 
     if (follow.ontology & is.null(onto)) {
@@ -190,14 +191,13 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
     if(!follow.ontology & simplify.pred)
         stop("If follow.ontology=FALSE, please set simplify.pred=FALSE")
 
-    # Retrieve labels from the ontology (need to add retrieval from y.cal/data
-    # when follow.ontology=FALSE)
+    ## If labels parameter is NULL, retrieve labels from the ontology
     if (is.null(labels)) {
         labels <- V(onto)$name[degree(onto, mode = "out") == 0]
     }
     K <- length(labels)
 
-    # If input is not a matrix, retrieve prediction matrix from colData
+    ## If input is not a matrix, retrieve prediction matrix from colData
     if (!is.matrix(x.query)) {
         p.query <- .retrievePredMatrix(x.query, K = K, labels = labels)
     } else {
@@ -272,19 +272,21 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
     }
 
     ## Transform prediction with leaf nodes to prediction sets with the
-    ## common ancestor
+    ## common ancestor if simplify.pred=TRUE
     if (simplify.pred){
         pred.sets1 <- sapply(pred.sets,
                              function(x) returnCommonAncestor(x, onto))
-        ## Check for ramification
+        ## Check for ramification. If there is a ramification in the ontology
+        ## and the children of the common ancestor include also labels not
+        ## in the prediction set, don't return the common ancestor
         for(i in seq_len(length(pred.sets1))){
             if(length(.children(pred.sets1[[i]], onto))==length(pred.sets[[i]]))
                 pred.sets[[i]] <- pred.sets1[[i]]
         }
     }
 
-    # if not specified, return a sc object if the input was a sc object,
-    # a matrix if the input was a matrix
+    ## if not specified, return a sc object if the input was a sc object,
+    ## a matrix if the input was a matrix
     if (is.null(return.sc) & sc) {
         return.sc <- TRUE
     }

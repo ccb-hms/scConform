@@ -13,12 +13,7 @@
     y.cal <- as.character(y.cal)
     # Get prediction sets for each value of lambda for all the calibration data
     j <- NULL
-    # sets <- foreach(j = lambdas, .packages = "scConform") %dopar% {
-    #     lapply(
-    #         seq_len(nrow(p.cal)),
-    #         function(i) .predSets(lambda = j, pred = p.cal[i, ], onto = onto)
-    #     )
-    # }
+
     sets <- bplapply(lambdas, function(j) {
       lapply(seq_len(nrow(p.cal)), function(i) {
         .predSets(lambda = j, pred = p.cal[i, ], onto = onto)
