@@ -99,14 +99,13 @@ library(BiocParallel)
 
 ## Load data and cell ontology
 
-As an explanatory example, we'll use the mouse ileum 
-Merfish data from the `MerfishData` Bioconductor package, segmented with Baysor.
+As an example, we'll use the mouse ileum Merfish data from the `MerfishData` Bioconductor package, segmented with Baysor.
 For the purpose of this vignette, we'll treat the data as if they were 
 single-cell data, discarding the spatial information. This is a toy example
-in which reference and query data will be subset of the same dataset. In real
+in which reference and query data will be a subset of the same dataset. In real
 life examples, data integration is a necessary first step.
 
-Load also the cell ontology trough the `ontoProc` Bioconductor package.
+Next, load the cell ontology trough the `ontoProc` Bioconductor package.
 
 ```{r data}
 # Load data
@@ -118,8 +117,8 @@ cl <- getOnto("cellOnto", "2023")
 ## Build the ontology
 
 The object `cl` contains information regarding all the relationships among all
-the known cell types. The first step for our analysis is to filter the ontology
-and keep only the part related to the cell types that are present in the data.
+the known cell types. The first step is to filter the ontology and only keep 
+the part related to the cell types that are present in the data.
 
 This dataset does not provide annotations with the cell ontology tags, so
 we need to browse the ontology to find the interesting tags.
