@@ -10,7 +10,7 @@ output:
     toc: true
     toc_float: true
 vignette: >
-  %\VignetteIndexEntry{scConform}
+  %\VignetteIndexEntry{Conformal Prediction for cell type annotation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
