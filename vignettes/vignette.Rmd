@@ -392,7 +392,7 @@ head(spe.query$pred_set)
 
 ## Algorithm
 
-Let $\hat{y}(x)$ be the class with the maximum estimated probaility. Moreover,
+Let $\hat{y}(x)$ be the class with the maximum estimated probability. Moreover,
 given a directed graph let $P(v)$ and $A(v)$ be the set
 of children nodes and ancestor nodes of $v$, respectively. Finally, for each 
 node $v$ define a score $g(v,x)$ as the sum of the predicted probabilities of
@@ -437,16 +437,14 @@ spe.query <- getPredictionSets(
 cvg1<- rep(NA, length(spe.query$pred_set_hier))
 for(i in seq_len(length(spe.query$pred_set_hier)))
   cvg1[i] <- spe.query$cell_type[i] %in% spe.query$pred_set_hier[[i]]
+
 mean(cvg1)
-
-spe.query
-
 head(spe.query$pred_set_hier)
 ```
 
-As an alternative, we can choose to return, instead of the set of all the labels
-included in the prediction set, only the common ancestor. This can be done 
-directly in the function by setting `simplify.pred=TRUE`.
+As an alternative, we can choose to return, only the common ancestor, instead of 
+the entire set of predicted labels. This can be done directly in the function by 
+setting `simplify.pred=TRUE`.
 Alternatively, we can convert the obtained prediction sets invoking
 the function `returnCommonAncestor`.
 
