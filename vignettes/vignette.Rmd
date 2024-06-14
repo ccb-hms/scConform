@@ -109,7 +109,8 @@ Next, load the cell ontology trough the `ontoProc` Bioconductor package.
 
 ```{r data}
 # Load data
-spe.baysor <- MouseIleumPetukhov2021(segmentation = "baysor")
+spe.baysor <- MouseIleumPetukhov2021(segmentation = "baysor", 
+                                     use.images = FALSE, use.polygons = FALSE)
 # Load ontology
 cl <- getOnto("cellOnto", "2023")
 ```
@@ -118,7 +119,7 @@ cl <- getOnto("cellOnto", "2023")
 
 The object `cl` contains information regarding all the relationships among all
 the known cell types. The first step is to filter the ontology and only keep 
-the part related to the cell types that are present in the data.
+the parts related to the cell types that are present in the data.
 
 This dataset does not provide annotations with the cell ontology tags, so
 we need to browse the ontology to find the interesting tags.
@@ -152,7 +153,7 @@ In the `opi` object, there are also instances from other ontologies
 (CARO and BFO) that need to be removed. 
 
 Moreover, the names of the leaf nodes of the ontology must correspond to the 
-names used for the annotation
+names used for the annotation.
 
 ```{r build-ontology}
 ## Delete CARO and BFO instances 
