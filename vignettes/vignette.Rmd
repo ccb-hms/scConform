@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-Cell type annotation is a crucial step in Bioinformatic research. A multitude of 
+Cell type annotation is a crucial step in bioinformatic research. A multitude of 
 annotated datasets are now readily accessible, providing valuable references for 
 annotating cells in unannotated datasets originating from similar tissues. 
 Typically, a model is chosen and trained on the reference data to predict the 
@@ -65,7 +65,15 @@ $P(Y_{new} \in C(X_{new})) \geq 1-\alpha$.
 
 To install it
 ```{r, eval=FALSE}
-devtools::install_github("ccb-hms/scConform")
+if (BiocManager::version() >= "3.20") {
+    BiocManager::install("scConform")
+} else {
+    spdl::info(
+        "'scConform' requires Bioconductor version 3.20 or later, ",
+        "installing development version from Github"
+    )
+    devtools::install_github("ccb-hms/scConform")
+}
 ```
 
 
