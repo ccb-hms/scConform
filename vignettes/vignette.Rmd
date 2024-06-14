@@ -215,7 +215,7 @@ spe.baysor
 table(spe.baysor$cell_type)
 ```
 
-Now split randomly the data into reference and query data. 
+Now randomly split the data into reference and query data. 
 ```{r}
 set.seed(1635)
 ref <- sample(1:ncol(spe.baysor), 1500)
@@ -384,8 +384,7 @@ spe.query <- getPredictionSets(
     labels = labels
 )
 
-spe.query
-
+head(colData(spe.query))
 head(spe.query$pred_set)
 ```
 
