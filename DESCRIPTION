@@ -1,7 +1,7 @@
 Package: scConform
 Type: Package
 Title: Conformal Inference For Cell Type Annotation
-Version: 0.99.0
+Version: 0.99.1
 Authors@R: person("Corbetta", "Daniela", 
                   email = "daniela.corbetta@phd.unipd.it", 
                   role = c("aut", "cre"))
@@ -13,7 +13,6 @@ Description: Builds prediction interval for cell type annotation using conformal
     instead gives hierarchical prediction intervals that are consistent
     with the cell ontology.
 License: Artistic-2.0
-LazyData: true
 Depends:
     R (>= 4.2.0)
 Suggests:

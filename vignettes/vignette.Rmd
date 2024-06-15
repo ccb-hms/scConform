@@ -10,7 +10,7 @@ output:
     toc: true
     toc_float: true
 vignette: >
-  %\VignetteIndexEntry{scConform}
+  %\VignetteIndexEntry{Conformal Prediction for cell type annotation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-Cell type annotation is a crucial step in Bioinformatic research. A multitude of 
+Cell type annotation is a crucial step in bioinformatic research. A multitude of 
 annotated datasets are now readily accessible, providing valuable references for 
 annotating cells in unannotated datasets originating from similar tissues. 
 Typically, a model is chosen and trained on the reference data to predict the 
@@ -65,13 +65,21 @@ $P(Y_{new} \in C(X_{new})) \geq 1-\alpha$.
 
 To install it
 ```{r, eval=FALSE}
-devtools::install_github("ccb-hms/scConform")
+if (BiocManager::version() >= "3.20") {
+    BiocManager::install("scConform")
+} else {
+    spdl::info(
+        "'scConform' requires Bioconductor version 3.20 or later, ",
+        "installing development version from Github"
+    )
+    devtools::install_github("ccb-hms/scConform")
+}
 ```
 
 
 # Preliminaries
 
-## Load useful libraries
+## Setup
 
 ```{r libraries, message=FALSE}
 library(scConform)
@@ -91,18 +99,18 @@ library(BiocParallel)
 
 ## Load data and cell ontology
 
-As an explanatory example, we'll use the mouse ileum 
-Merfish data from the `MerfishData` Bioconductor package, segmented with Baysor.
+As an example, we'll use the mouse ileum Merfish data from the `MerfishData` Bioconductor package, segmented with Baysor.
 For the purpose of this vignette, we'll treat the data as if they were 
 single-cell data, discarding the spatial information. This is a toy example
-in which reference and query data will be subset of the same dataset. In real
+in which reference and query data will be a subset of the same dataset. In real
 life examples, data integration is a necessary first step.
 
-Load also the cell ontology trough the `ontoProc` Bioconductor package.
+Next, load the cell ontology trough the `ontoProc` Bioconductor package.
 
 ```{r data}
 # Load data
-spe.baysor <- MouseIleumPetukhov2021(segmentation = "baysor")
+spe.baysor <- MouseIleumPetukhov2021(segmentation = "baysor", 
+                                     use.images = FALSE, use.polygons = FALSE)
 # Load ontology
 cl <- getOnto("cellOnto", "2023")
 ```
@@ -110,8 +118,8 @@ cl <- getOnto("cellOnto", "2023")
 ## Build the ontology
 
 The object `cl` contains information regarding all the relationships among all
-the known cell types. The first step for our analysis is to filter the ontology
-and keep only the part related to the cell types that are present in the data.
+the known cell types. The first step is to filter the ontology and only keep 
+the parts related to the cell types that are present in the data.
 
 This dataset does not provide annotations with the cell ontology tags, so
 we need to browse the ontology to find the interesting tags.
@@ -145,7 +153,7 @@ In the `opi` object, there are also instances from other ontologies
 (CARO and BFO) that need to be removed. 
 
 Moreover, the names of the leaf nodes of the ontology must correspond to the 
-names used for the annotation
+names used for the annotation.
 
 ```{r build-ontology}
 ## Delete CARO and BFO instances 
@@ -207,7 +215,7 @@ spe.baysor
 table(spe.baysor$cell_type)
 ```
 
-Now split randomly the data into reference and query data. 
+Now randomly split the data into reference and query data. 
 ```{r}
 set.seed(1635)
 ref <- sample(1:ncol(spe.baysor), 1500)
@@ -376,8 +384,7 @@ spe.query <- getPredictionSets(
     labels = labels
 )
 
-spe.query
-
+head(colData(spe.query))
 head(spe.query$pred_set)
 ```
 
@@ -385,7 +392,7 @@ head(spe.query$pred_set)
 
 ## Algorithm
 
-Let $\hat{y}(x)$ be the class with the maximum estimated probaility. Moreover,
+Let $\hat{y}(x)$ be the class with the maximum estimated probability. Moreover,
 given a directed graph let $P(v)$ and $A(v)$ be the set
 of children nodes and ancestor nodes of $v$, respectively. Finally, for each 
 node $v$ define a score $g(v,x)$ as the sum of the predicted probabilities of
@@ -430,16 +437,14 @@ spe.query <- getPredictionSets(
 cvg1<- rep(NA, length(spe.query$pred_set_hier))
 for(i in seq_len(length(spe.query$pred_set_hier)))
   cvg1[i] <- spe.query$cell_type[i] %in% spe.query$pred_set_hier[[i]]
+
 mean(cvg1)
-
-spe.query
-
 head(spe.query$pred_set_hier)
 ```
 
-As an alternative, we can choose to return, instead of the set of all the labels
-included in the prediction set, only the common ancestor. This can be done 
-directly in the function by setting `simplify.pred=TRUE`.
+As an alternative, we can choose to return, only the common ancestor, instead of 
+the entire set of predicted labels. This can be done directly in the function by 
+setting `simplify.pred=TRUE`.
 Alternatively, we can convert the obtained prediction sets invoking
 the function `returnCommonAncestor`.
 
