@@ -1,7 +1,7 @@
 Package: scConform
 Type: Package
 Title: Conformal Inference For Cell Type Annotation
-Version: 0.99.0
+Version: 0.99.1
 Authors@R: person("Corbetta", "Daniela", 
                   email = "daniela.corbetta@phd.unipd.it", 
                   role = c("aut", "cre"))
