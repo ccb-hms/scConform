@@ -23,8 +23,10 @@ It is useful when using hierarchical
 \examples{
 library(igraph)
 # Let's build a random ontology
-onto <- graph_from_literal(animal-+dog:cat, cat-+british:persian,
-dog-+cocker:retriever, retriever-+golden:labrador)
+onto <- graph_from_literal(
+    animal-+dog:cat, cat-+british:persian,
+    dog-+cocker:retriever, retriever-+golden:labrador
+)
 # Let's consider this prediction set
 pred_set <- c("golden", "labrador", "cocker")
 com_anc <- returnCommonAncestor(pred_set, onto)

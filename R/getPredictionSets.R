@@ -148,16 +148,16 @@
 #' @importFrom BiocParallel SerialParam bplapply
 #' @export
 
-getPredictionSets <- function(x_query, x_cal, y_cal, onto = NULL, alpha = 0.1,
-    lambdas = seq(0.001, 0.999, length.out = 100),
-    follow_ontology = TRUE,
-    resample_cal = FALSE,
-    labels = NULL,
-    return_sc = NULL,
-    pr_name = "pred.set",
-    simplify_pred = FALSE,
-    BPPARAM = SerialParam()) {
-
+getPredictionSets <- function(
+        x_query, x_cal, y_cal, onto = NULL, alpha = 0.1,
+        lambdas = seq(0.001, 0.999, length.out = 100),
+        follow_ontology = TRUE,
+        resample_cal = FALSE,
+        labels = NULL,
+        return_sc = NULL,
+        pr_name = "pred.set",
+        simplify_pred = FALSE,
+        BPPARAM = SerialParam()) {
     ## Sanity checks
 
     if (follow_ontology & is.null(onto)) {
@@ -188,8 +188,9 @@ getPredictionSets <- function(x_query, x_cal, y_cal, onto = NULL, alpha = 0.1,
         }
     }
 
-    if(!follow_ontology & simplify_pred)
+    if (!follow_ontology & simplify_pred) {
         stop("If follow_ontology=FALSE, please set simplify_pred=FALSE")
+    }
 
     ## If labels parameter is NULL, retrieve labels from the ontology
     if (is.null(labels)) {
@@ -273,15 +274,20 @@ getPredictionSets <- function(x_query, x_cal, y_cal, onto = NULL, alpha = 0.1,
 
     ## Transform prediction with leaf nodes to prediction sets with the
     ## common ancestor if simplify_pred=TRUE
-    if (simplify_pred){
-        pred_sets1 <- sapply(pred_sets,
-                             function(x) returnCommonAncestor(x, onto))
+    if (simplify_pred) {
+        pred_sets1 <- vapply(
+            pred_sets,
+            function(x) returnCommonAncestor(x, onto),
+            character(1)
+        )
         ## Check for ramification. If there is a ramification in the ontology
         ## and the children of the common ancestor include also labels not
         ## in the prediction set, don't return the common ancestor
-        for(i in seq_len(length(pred_sets1))){
-            if(length(.children(pred_sets1[[i]], onto))==length(pred_sets[[i]]))
+        for (i in seq_len(length(pred_sets1))) {
+            if (length(.children(pred_sets1[[i]], onto)) ==
+                length(pred_sets[[i]])) {
                 pred_sets[[i]] <- pred_sets1[[i]]
+            }
         }
     }
 

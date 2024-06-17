@@ -43,3 +43,18 @@ a plot of the ontology with the considered classes colored
 This function takes as input a prediction set and an
 ontology and plots the ontology, highlighting the labels included in the set.
 }
+\examples{
+library(igraph)
+# Let's build a random ontology
+onto <- graph_from_literal(
+    animal-+dog:cat, cat-+british:persian,
+    dog-+cocker:retriever, retriever-+golden:labrador
+)
+# Let's consider this prediction set
+pred_set <- c("golden", "labrador", "cocker")
+plotResult(pred_set, onto,
+    col_grad = "pink", add_scores = FALSE,
+    title = "Prediction set"
+)
+
+}

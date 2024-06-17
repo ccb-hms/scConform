@@ -5,7 +5,6 @@ Version: 0.99.1
 Authors@R: person("Corbetta", "Daniela", 
                   email = "daniela.corbetta@phd.unipd.it", 
                   role = c("aut", "cre"))
-Maintainer: Daniela Corbetta <daniela.corbetta@phd.unipd.it>
 Description: Builds prediction interval for cell type annotation using conformal 
     inference and conformal risk control.
     It provides two main methods. The first one gives prediction intervals with 
@@ -14,7 +13,7 @@ Description: Builds prediction interval for cell type annotation using conformal
     with the cell ontology.
 License: Artistic-2.0
 Depends:
-    R (>= 4.2.0)
+    R (>= 4.4.0)
 Suggests:
     knitr,
     Matrix,
@@ -40,3 +39,5 @@ Encoding: UTF-8
 biocViews: 
     SingleCell,
     Annotation
+URL: https://github.com/ccb-hms/scConform
+BugReports: https://github.com/ccb-hms/scConform/issues
