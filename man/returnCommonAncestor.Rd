@@ -4,15 +4,15 @@
 \alias{returnCommonAncestor}
 \title{Return the common ancestor of the labels in the prediction set}
 \usage{
-returnCommonAncestor(pred.set, onto)
+returnCommonAncestor(pred_set, onto)
 }
 \arguments{
-\item{pred.set}{character vector containing the labels in the prediction set}
+\item{pred_set}{character vector containing the labels in the prediction set}
 
 \item{onto}{ontology as an igraph object}
 }
 \value{
-the common ancestor of the labels in \code{pred.set}, according to
+the common ancestor of the labels in \code{pred_set}, according to
 the ontology \code{onto}
 }
 \description{
@@ -26,6 +26,6 @@ library(igraph)
 onto <- graph_from_literal(animal-+dog:cat, cat-+british:persian,
 dog-+cocker:retriever, retriever-+golden:labrador)
 # Let's consider this prediction set
-pred.set <- c("golden", "labrador", "cocker")
-com.anc <- returnCommonAncestor(pred.set, onto)
+pred_set <- c("golden", "labrador", "cocker")
+com_anc <- returnCommonAncestor(pred_set, onto)
 }

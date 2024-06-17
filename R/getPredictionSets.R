@@ -6,49 +6,49 @@
 #' either a SingleCellExperiment object with the prediction sets in the colData
 #' or a list.
 #'
-#' @param x.query query data for which we want to build prediction sets. Could
+#' @param x_query query data for which we want to build prediction sets. Could
 #' be either a SingleCellExperiment object with the estimated probabilities for
 #' each cell type in the colData, or a named matrix of dimension \code{n x K},
 #' where \code{n} is the number of cells and \code{K} is the number of different
 #' labels. The colnames of the matrix have to correspond to the cell labels.
-#' @param x.cal calibration data. Could be either a
+#' @param x_cal calibration data. Could be either a
 #' SingleCellExperiment object with the estimated probabilities for each cell
 #' type in the colData, or a named matrix of dimension \code{m x K}, where
 #' \code{m} is the number of cells and \code{K} is the number of different
 #' labels. The colnames of the matrix have to correspond to the cell labels.
-#' @param y.cal a vector of length \code{m} with the true labels of the cells in
+#' @param y_cal a vector of length \code{m} with the true labels of the cells in
 #' the calibration data.
 #' @param onto the considered section of the cell ontology as an igraph object.
 #' @param alpha a number between 0 and 1 that indicates the allowed miscoverage
 #' @param lambdas a vector of possible lambda values to be considered. Necessary
-#' only when \code{follow.ontology=TRUE}.
-#' @param follow.ontology If \code{TRUE}, then the function returns hierarchical
+#' only when \code{follow_ontology=TRUE}.
+#' @param follow_ontology If \code{TRUE}, then the function returns hierarchical
 #' prediction sets that follow the cell ontology structure. If \code{FALSE}, it
 #' returns classical conformal prediction sets. See details.
-#' @param resample.cal Should the calibration dataset be resampled according to
+#' @param resample_cal Should the calibration dataset be resampled according to
 #' the estimated relative frequencies of cell types in the query data?
 #' @param labels labels of different considered cell types. Necessary if
 #' \code{onto=NULL}, otherwise they are set equal to the leaf nodes of the
 #' provided graph.
-#' @param return.sc parameter the controls the output. If \code{TRUE}, the
+#' @param return_sc parameter the controls the output. If \code{TRUE}, the
 #' function returns a SingleCellExperiment.
 #' If \code{FALSE}, the function returns a list. By default,
-#' it is set to \code{TRUE} when \code{x.query} is a SingleCellExperiment or
-#' SpatialExperiment object and to \code{FALSE} when \code{x.query} is a matrix.
-#' @param pr.name name of the colData variable in the returned
+#' it is set to \code{TRUE} when \code{x_query} is a SingleCellExperiment or
+#' SpatialExperiment object and to \code{FALSE} when \code{x_query} is a matrix.
+#' @param pr_name name of the colData variable in the returned
 #' SingleCellExperiment object that will contain the prediction
 #' sets. The default name is \code{pred.set}.
-#' @param simplify.pred if \code{TRUE}, the output will be the common ancestor
+#' @param simplify_pred if \code{TRUE}, the output will be the common ancestor
 #' of the labels inserted into the prediction set. If \code{FALSE} (default),
 #' the output will be the set of the leaf labels.
 #' @param BPPARAM BiocParallel instance for parallel computing. Default is
 #' \code{SerialParam()}.
 #' @return
-#' \item{\code{return.sc = TRUE}}{the function \code{getPredictionSets} returns
+#' \item{\code{return_sc = TRUE}}{the function \code{getPredictionSets} returns
 #' a SingleCellExperiment or SpatialExperiment
 #' object with the prediction sets in the colData. The name of the variable
-#' containing the prediction sets is given by the parameter \code{pr.name}}
-#' \item{\code{return.sc = FALSE}}{the function \code{getPredictionSets} returns
+#' containing the prediction sets is given by the parameter \code{pr_name}}
+#' \item{\code{return_sc = FALSE}}{the function \code{getPredictionSets} returns
 #' a list of length equal
 #' to the number of cells in the test data. Each element of the list contains
 #' the prediction set for that cell.}
@@ -117,28 +117,28 @@
 #' # by row
 #' p <- exp(p - apply(p, 1, max))
 #' p <- p / rowSums(p)
-#' cell.types <- c("T (CD4+)", "T (CD8+)", "B", "NK")
-#' colnames(p) <- cell.types
+#' cell_types <- c("T (CD4+)", "T (CD8+)", "B", "NK")
+#' colnames(p) <- cell_types
 #'
 #' # Take 1000 rows as calibration and 1000 as test
-#' p.cal <- p[1:1000, ]
-#' p.test <- p[1001:2000, ]
+#' p_cal <- p[1:1000, ]
+#' p_test <- p[1001:2000, ]
 #'
-#' # Randomly create the vector of real cell types for p.cal and p.test
-#' y.cal <- sample(cell.types, 1000, replace = TRUE)
-#' y.test <- sample(cell.types, 1000, replace = TRUE)
+#' # Randomly create the vector of real cell types for p_cal and p_test
+#' y_cal <- sample(cell_types, 1000, replace = TRUE)
+#' y_test <- sample(cell_types, 1000, replace = TRUE)
 #'
 #' # Obtain conformal prediction sets
-#' conf.sets <- getPredictionSets(
-#'     x.query = p.test,
-#'     x.cal = p.cal,
-#'     y.cal = y.cal,
+#' conf_sets <- getPredictionSets(
+#'     x_query = p_test,
+#'     x_cal = p_cal,
+#'     y_cal = y_cal,
 #'     onto = NULL,
 #'     alpha = 0.1,
-#'     follow.ontology = FALSE,
-#'     resample.cal = FALSE,
-#'     labels = cell.types,
-#'     return.sc = FALSE
+#'     follow_ontology = FALSE,
+#'     resample_cal = FALSE,
+#'     labels = cell_types,
+#'     return_sc = FALSE
 #' )
 #'
 #' @importFrom foreach %dopar% foreach
@@ -148,48 +148,48 @@
 #' @importFrom BiocParallel SerialParam bplapply
 #' @export
 
-getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
+getPredictionSets <- function(x_query, x_cal, y_cal, onto = NULL, alpha = 0.1,
     lambdas = seq(0.001, 0.999, length.out = 100),
-    follow.ontology = TRUE,
-    resample.cal = FALSE,
+    follow_ontology = TRUE,
+    resample_cal = FALSE,
     labels = NULL,
-    return.sc = NULL,
-    pr.name = "pred.set",
-    simplify.pred = FALSE,
+    return_sc = NULL,
+    pr_name = "pred.set",
+    simplify_pred = FALSE,
     BPPARAM = SerialParam()) {
 
     ## Sanity checks
 
-    if (follow.ontology & is.null(onto)) {
+    if (follow_ontology & is.null(onto)) {
         stop("An ontology is required for hierarchical prediction set.
              Please provide one or ask for conformal prediction set
-             (follow.ontology=FALSE)")
+             (follow_ontology=FALSE)")
     }
 
     if (is.null(onto) & is.null(labels)) {
         stop("Please provide cell labels (labels parameter)")
     }
 
-    if (isa(x.query, "SpatialExperiment") |
-        isa(x.query, "SingleCellExperiment") |
-        isa(x.query, "SummarizedExperiment")) {
+    if (isa(x_query, "SpatialExperiment") |
+        isa(x_query, "SingleCellExperiment") |
+        isa(x_query, "SummarizedExperiment")) {
         sc <- TRUE
-    } else if (is.matrix(x.query)) {
+    } else if (is.matrix(x_query)) {
         sc <- FALSE
     } else {
-        stop("Please provide as input in x.query a SpatialExperiment,
+        stop("Please provide as input in x_query a SpatialExperiment,
               SingleCellExperiment or a matrix")
     }
 
-    if (!is.null(return.sc)) {
-        if (return.sc == TRUE & !sc) {
-            stop("If x.query is a matrix output has to be a list
-                 (return.sc=FALSE)")
+    if (!is.null(return_sc)) {
+        if (return_sc == TRUE & !sc) {
+            stop("If x_query is a matrix output has to be a list
+                 (return_sc=FALSE)")
         }
     }
 
-    if(!follow.ontology & simplify.pred)
-        stop("If follow.ontology=FALSE, please set simplify.pred=FALSE")
+    if(!follow_ontology & simplify_pred)
+        stop("If follow_ontology=FALSE, please set simplify_pred=FALSE")
 
     ## If labels parameter is NULL, retrieve labels from the ontology
     if (is.null(labels)) {
@@ -198,119 +198,106 @@ getPredictionSets <- function(x.query, x.cal, y.cal, onto = NULL, alpha = 0.1,
     K <- length(labels)
 
     ## If input is not a matrix, retrieve prediction matrix from colData
-    if (!is.matrix(x.query)) {
-        p.query <- .retrievePredMatrix(x.query, K = K, labels = labels)
+    if (!is.matrix(x_query)) {
+        p_query <- .retrievePredMatrix(x_query, K = K, labels = labels)
     } else {
-        p.query <- x.query
+        p_query <- x_query
     }
 
-    if (!is.matrix(x.cal)) {
-        p.cal <- .retrievePredMatrix(x.cal, K = K, labels = labels)
+    if (!is.matrix(x_cal)) {
+        p_cal <- .retrievePredMatrix(x_cal, K = K, labels = labels)
     } else {
-        p.cal <- x.cal
+        p_cal <- x_cal
     }
 
-    if (!resample.cal) {
-        if (follow.ontology) {
-            pred.sets <- .getHierarchicalPredSets(
-                p.cal = p.cal, p.test = p.query,
-                y.cal = y.cal, onto = onto,
+    if (!resample_cal) {
+        if (follow_ontology) {
+            pred_sets <- .getHierarchicalPredSets(
+                p_cal = p_cal, p_test = p_query,
+                y_cal = y_cal, onto = onto,
                 alpha = alpha,
                 lambdas = lambdas,
                 BPPARAM = BPPARAM
             )
         } else {
-            pred.sets <- .getConformalPredSets(
-                p.cal = p.cal, p.test = p.query,
-                y.cal = y.cal, alpha = alpha
+            pred_sets <- .getConformalPredSets(
+                p_cal = p_cal, p_test = p_query,
+                y_cal = y_cal, alpha = alpha
             )
         }
     }
 
-    if (resample.cal) {
-        data <- resample.two(
-            p.cal = p.cal, p.test = p.query, y.cal = y.cal,
+    if (resample_cal) {
+        data <- .resampleTwo(
+            p_cal = p_cal, p_test = p_query, y_cal = y_cal,
             labels = labels
         )
-        if (follow.ontology) {
-            pred.sets1 <- .getHierarchicalPredSets(
-                p.cal = data$p.cal2,
-                p.test = data$p.test1,
-                y.cal = data$y.cal2,
+        if (follow_ontology) {
+            pred_sets1 <- .getHierarchicalPredSets(
+                p_cal = data$p_cal2,
+                p_test = data$p_test1,
+                y_cal = data$y_cal2,
                 onto = onto,
                 alpha = alpha,
                 lambdas = lambdas,
                 BPPARAM = BPPARAM
             )
-            pred.sets2 <- .getHierarchicalPredSets(
-                p.cal = data$p.cal1,
-                p.test = data$p.test2,
-                y.cal = data$y.cal1,
+            pred_sets2 <- .getHierarchicalPredSets(
+                p_cal = data$p_cal1,
+                p_test = data$p_test2,
+                y_cal = data$y_cal1,
                 onto = onto,
                 alpha = alpha,
                 lambdas = lambdas,
                 BPPARAM = BPPARAM
             )
-            pred.sets <- c(pred.sets1, pred.sets2)
+            pred_sets <- c(pred_sets1, pred_sets2)
         } else {
-            pred.sets1 <- .getConformalPredSets(
-                p.cal = data$p.cal2,
-                p.test = data$p.test1,
-                y.cal = data$y.cal2,
+            pred_sets1 <- .getConformalPredSets(
+                p_cal = data$p_cal2,
+                p_test = data$p_test1,
+                y_cal = data$y_cal2,
                 alpha = alpha
             )
-            pred.sets2 <- .getConformalPredSets(
-                p.cal = data$p.cal1,
-                p.test = data$p.test2,
-                y.cal = data$y.cal1,
+            pred_sets2 <- .getConformalPredSets(
+                p_cal = data$p_cal1,
+                p_test = data$p_test2,
+                y_cal = data$y_cal1,
                 alpha = alpha
             )
-            pred.sets <- c(pred.sets1, pred.sets2)
+            pred_sets <- c(pred_sets1, pred_sets2)
         }
         # Order the prediction set
-        pred.sets <- pred.sets[order(data$idx)]
+        pred_sets <- pred_sets[order(data$idx)]
     }
 
     ## Transform prediction with leaf nodes to prediction sets with the
-    ## common ancestor if simplify.pred=TRUE
-    if (simplify.pred){
-        pred.sets1 <- sapply(pred.sets,
+    ## common ancestor if simplify_pred=TRUE
+    if (simplify_pred){
+        pred_sets1 <- sapply(pred_sets,
                              function(x) returnCommonAncestor(x, onto))
         ## Check for ramification. If there is a ramification in the ontology
         ## and the children of the common ancestor include also labels not
         ## in the prediction set, don't return the common ancestor
-        for(i in seq_len(length(pred.sets1))){
-            if(length(.children(pred.sets1[[i]], onto))==length(pred.sets[[i]]))
-                pred.sets[[i]] <- pred.sets1[[i]]
+        for(i in seq_len(length(pred_sets1))){
+            if(length(.children(pred_sets1[[i]], onto))==length(pred_sets[[i]]))
+                pred_sets[[i]] <- pred_sets1[[i]]
         }
     }
 
     ## if not specified, return a sc object if the input was a sc object,
     ## a matrix if the input was a matrix
-    if (is.null(return.sc) & sc) {
-        return.sc <- TRUE
+    if (is.null(return_sc) & sc) {
+        return_sc <- TRUE
     }
-    if (is.null(return.sc) & !sc) {
-        return.sc <- FALSE
+    if (is.null(return_sc) & !sc) {
+        return_sc <- FALSE
     }
-    if (return.sc) {
-        colData(x.query)[[pr.name]] <- pred.sets
-        return(x.query)
+    if (return_sc) {
+        colData(x_query)[[pr_name]] <- pred_sets
+        return(x_query)
     }
-    if (!return.sc) {
-        return(pred.sets)
+    if (!return_sc) {
+        return(pred_sets)
     }
-}
-
-## function to retrieve prediction matrix from the colData of a
-## SingleCellExperiment object
-
-.retrievePredMatrix <- function(sc, K, labels) {
-    n.sc <- ncol(sc)
-    p.sc <- matrix(NA, nrow = n.sc, ncol = K)
-    colnames(p.sc) <- labels
-    for (i in labels) {
-        p.sc[, i] <- colData(sc)[[i]]
-    }
-    return(p.sc)
 }

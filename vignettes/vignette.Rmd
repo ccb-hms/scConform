@@ -109,7 +109,7 @@ Next, load the cell ontology trough the `ontoProc` Bioconductor package.
 
 ```{r data}
 # Load data
-spe.baysor <- MouseIleumPetukhov2021(segmentation = "baysor", 
+spe_baysor <- MouseIleumPetukhov2021(segmentation = "baysor", 
                                      use.images = FALSE, use.polygons = FALSE)
 # Load ontology
 cl <- getOnto("cellOnto", "2023")
@@ -201,29 +201,29 @@ plot(gr1, attrs = attrs)
 Modify the colData variable `leiden_final` to unify B cells and enterocytes
 
 ```{r preprocess}
-spe.baysor$cell_type <- spe.baysor$leiden_final
-spe.baysor$cell_type[spe.baysor$cell_type %in% c(
+spe_baysor$cell_type <- spe_baysor$leiden_final
+spe_baysor$cell_type[spe_baysor$cell_type %in% c(
     "B (Follicular, Circulating)",
     "B (Plasma)"
 )] <- "B cell"
-spe.baysor$cell_type[grep("Enterocyte", spe.baysor$cell_type)] <- "Enterocyte"
-spe.baysor <- spe.baysor[, spe.baysor$cell_type %notin% c(
+spe_baysor$cell_type[grep("Enterocyte", spe_baysor$cell_type)] <- "Enterocyte"
+spe_baysor <- spe_baysor[, spe_baysor$cell_type %notin% c(
     "Removed",
     "Myenteric Plexus"
 )]
-spe.baysor
-table(spe.baysor$cell_type)
+spe_baysor
+table(spe_baysor$cell_type)
 ```
 
 Now randomly split the data into reference and query data. 
 ```{r}
 set.seed(1635)
-ref <- sample(1:ncol(spe.baysor), 1500)
+ref <- sample(1:ncol(spe_baysor), 1500)
 
-spe.ref <- spe.baysor[,ref]
-spe.query <- spe.baysor[,-ref]
-spe.ref
-spe.query
+spe_ref <- spe_baysor[,ref]
+spe_query <- spe_baysor[,-ref]
+spe_ref
+spe_query
 ```
 
 
@@ -238,25 +238,25 @@ as long as it provides also estimated probabilities for each class.
 ```{r model, warning=FALSE}
 # Randomly select 500 cells
 set.seed(1703)
-train <- sample(1:ncol(spe.ref), 500)
+train <- sample(1:ncol(spe_ref), 500)
 # Training data
-spe.train <- spe.ref[,train]
-spe.train
+spe_train <- spe_ref[,train]
+spe_train
 
 # get HVGs
-spe.train <- logNormCounts(spe.train)
-v <- modelGeneVar(spe.train)
+spe_train <- logNormCounts(spe_train)
+v <- modelGeneVar(spe_train)
 hvg <- getTopHVGs(v, n = 50)
 
 # Extract counts and convert data into a data.frame format
-df.train <- as.data.frame(t(as.matrix(counts(spe.train[hvg, ]))))
-df.train$Y <- spe.train$cell_type
-table(df.train$Y)
+df_train <- as.data.frame(t(as.matrix(counts(spe_train[hvg, ]))))
+df_train$Y <- spe_train$cell_type
+table(df_train$Y)
 
 # Fit multinomial model
 fit <- vglm(Y ~ .,
     family = multinomial(refLevel = "B cell"),
-    data = df.train
+    data = df_train
 )
 ```
 
@@ -307,15 +307,15 @@ different cell type. The entry $p_{i,j}$ of the matrix indicates the estimated
 probability that the cell $i$ is of type $j$.
 
 ```{r predictions, warning=FALSE}
-spe.cal <- spe.ref[,-train]
+spe_cal <- spe_ref[,-train]
 # Prediction matrix for calibration data
-df.cal <- as.data.frame(t(as.matrix(counts(spe.cal[hvg, ]))))
-p.cal <- predict(fit, newdata = df.cal, type = "response")
-head(round(p.cal, 3))
+df_cal <- as.data.frame(t(as.matrix(counts(spe_cal[hvg, ]))))
+p_cal <- predict(fit, newdata = df_cal, type = "response")
+head(round(p_cal, 3))
 # Prediction matrix for query data
-df.test <- as.data.frame(t(as.matrix(counts(spe.query[hvg, ]))))
-p.test <- predict(fit, newdata = df.test, type = "response")
-head(round(p.test, 3))
+df_test <- as.data.frame(t(as.matrix(counts(spe_query[hvg, ]))))
+p_test <- predict(fit, newdata = df_test, type = "response")
+head(round(p_test, 3))
 ```
 
 
@@ -326,7 +326,7 @@ prediction matrices for the calibration and the query dataset. In this case, the
 output of the function will be a list whose elements are the prediction sets for 
 each query cell.
 
-By setting `follow.ontology=FALSE`, we are asking the function to return
+By setting `follow_ontology=FALSE`, we are asking the function to return
 prediction sets obtained via split conformal inference.
 The parameter `onto` is not necessary with this method, but if the ontology is
 provided then it will be used by the function to retrieve the considered cell 
@@ -334,13 +334,13 @@ types. Alternatively, we can explicitly provide the labels with the
 parameter `labels`.
 
 ```{r predsets}
-labels <- colnames(p.test)
+labels <- colnames(p_test)
 sets <- getPredictionSets(
-    x.query = p.test, 
-    x.cal = p.cal, 
-    y.cal = spe.cal$cell_type,
+    x_query = p_test, 
+    x_cal = p_cal, 
+    y_cal = spe_cal$cell_type,
     alpha = 0.1,
-    follow.ontology = FALSE,
+    follow_ontology = FALSE,
     labels = labels
 )
 
@@ -349,7 +349,7 @@ sets[1:6]
 # Check coverage
 cvg <- rep(NA, length(sets))
 for(i in seq_len(length(sets)))
-  cvg[i] <- spe.query$cell_type[i] %in% sets[[i]]
+  cvg[i] <- spe_query$cell_type[i] %in% sets[[i]]
 mean(cvg)
 ```
 
@@ -361,7 +361,7 @@ in the ontology.
 
 The output will be a `SingleCellExperiment` object with a new variable in the 
 `colData` containing the prediction sets. The name of this variable can
-be assigned trough the `pr.name` parameter.
+be assigned trough the `pr_name` parameter.
 
 ```{r predsets-sc}
 # Retrieve labels as leaf nodes of the ontology
@@ -369,23 +369,23 @@ labels <- V(opi2)$name[degree(opi2, mode = "out") == 0]
 
 # Create corresponding colData
 for (i in labels) {
-    colData(spe.cal)[[i]] <- p.cal[, i]
-    colData(spe.query)[[i]] <- p.test[, i]
+    colData(spe_cal)[[i]] <- p_cal[, i]
+    colData(spe_query)[[i]] <- p_test[, i]
 }
 
 # Create prediction sets
-spe.query <- getPredictionSets(
-    x.query = spe.query, 
-    x.cal = spe.cal, 
-    y.cal = spe.cal$cell_type,
+spe_query <- getPredictionSets(
+    x_query = spe_query, 
+    x_cal = spe_cal, 
+    y_cal = spe_cal$cell_type,
     alpha = 0.1,
-    follow.ontology = FALSE,
-    pr.name = "pred_set",
+    follow_ontology = FALSE,
+    pr_name = "pred_set",
     labels = labels
 )
 
-head(colData(spe.query))
-head(spe.query$pred_set)
+head(colData(spe_query))
+head(spe_query$pred_set)
 ```
 
 # Method 2: exploit the cell ontology
@@ -415,43 +415,43 @@ than $\lambda$. To choose $\lambda$, we follow eq. (4) in
 ## Obtain hierarchical prediction sets
 
 To switch to the hierarchical algorithm, we just need to set 
-`follow.ontology=TRUE` and provide an ontology to the `onto` parameter.
+`follow_ontology=TRUE` and provide an ontology to the `onto` parameter.
 As in the previous case, if the input is a `SingleCellExperiment` object then 
 the output will be again a `SingleCellExperiment` object with a new variable
 containing the prediction sets in the colData.
 
 ```{r predset-hier}
-spe.query <- getPredictionSets(
-    x.query = spe.query, 
-    x.cal = spe.cal, 
-    y.cal = spe.cal$cell_type,
+spe_query <- getPredictionSets(
+    x_query = spe_query, 
+    x_cal = spe_cal, 
+    y_cal = spe_cal$cell_type,
     onto = opi2, 
     alpha = 0.1,
-    follow.ontology = TRUE,
-    pr.name = "pred_set_hier",
+    follow_ontology = TRUE,
+    pr_name = "pred_set_hier",
     BPPARAM = MulticoreParam(workers = 2),
-    simplify.pred=FALSE
+    simplify_pred=FALSE
 )
 
 # Check coverage
-cvg1<- rep(NA, length(spe.query$pred_set_hier))
-for(i in seq_len(length(spe.query$pred_set_hier)))
-  cvg1[i] <- spe.query$cell_type[i] %in% spe.query$pred_set_hier[[i]]
+cvg1 <- rep(NA, length(spe_query$pred_set_hier))
+for(i in seq_len(length(spe_query$pred_set_hier)))
+  cvg1[i] <- spe_query$cell_type[i] %in% spe_query$pred_set_hier[[i]]
 
 mean(cvg1)
-head(spe.query$pred_set_hier)
+head(spe_query$pred_set_hier)
 ```
 
 As an alternative, we can choose to return, only the common ancestor, instead of 
 the entire set of predicted labels. This can be done directly in the function by 
-setting `simplify.pred=TRUE`.
+setting `simplify_pred=TRUE`.
 Alternatively, we can convert the obtained prediction sets invoking
 the function `returnCommonAncestor`.
 
 ```{r common-ancestor}
-spe.query$pred_set_hier_simp <- sapply(spe.query$pred_set_hier,
+spe_query$pred_set_hier_simp <- sapply(spe_query$pred_set_hier,
                              function(x) returnCommonAncestor(x, opi2))
-head(spe.query$pred_set_hier_simp)
+head(spe_query$pred_set_hier_simp)
 ```
 
 # Visualization
@@ -461,14 +461,14 @@ ask to color the labels included in the prediction set. Let's compare
 the prediction sets for one cell obtained with the two methods
 
 ```{r}
-plotResult(spe.query$pred_set[[64]], opi2, 
-           col.grad="pink", attrs=attrs, add.scores = FALSE,
+plotResult(spe_query$pred_set[[64]], opi2, 
+           col_grad="pink", attrs=attrs, add_scores = FALSE,
            title="Conformal Prediction set")
 ```
 
 ```{r}
-plotResult(spe.query$pred_set_hier[[64]], opi2,
-           col.grad="pink", attrs=attrs, add.scores = FALSE,
+plotResult(spe_query$pred_set_hier[[64]], opi2,
+           col_grad="pink", attrs=attrs, add_scores = FALSE,
            title="Hierarchical prediction set")
 ```
 
@@ -477,29 +477,29 @@ gradient. The function will color the cells according to the gradient, with
 stronger colors corresponding to higher probabilities.
 
 ```{r}
-plotResult(spe.query$pred_set[[64]], opi2, probs=p.test[64,],
-           col.grad=c("lemonchiffon", "orange", "darkred"), 
-           attrs=attrs, add.scores = FALSE,
+plotResult(spe_query$pred_set[[64]], opi2, probs=p_test[64,],
+           col_grad=c("lemonchiffon", "orange", "darkred"), 
+           attrs=attrs, add_scores = FALSE,
            title="Conformal Prediction set")
 ```
 ```{r}
-plotResult(spe.query$pred_set_hier[[64]], opi2, probs=p.test[64,],
-           col.grad=c("lemonchiffon", "orange", "darkred"), 
-           attrs=attrs, add.scores = FALSE,
+plotResult(spe_query$pred_set_hier[[64]], opi2, probs=p_test[64,],
+           col_grad=c("lemonchiffon", "orange", "darkred"), 
+           attrs=attrs, add_scores = FALSE,
            title="Hierarchical Prediction set")
 ```
 
 Lastly, we can explicitly add to the labels the estimated probabilities
 ```{r}
-plotResult(spe.query$pred_set[[64]], opi2, probs=p.test[64,],
-           col.grad=c("lemonchiffon", "orange", "darkred"), 
-           attrs=attrs, add.scores = TRUE, k=2,
+plotResult(spe_query$pred_set[[64]], opi2, probs=p_test[64,],
+           col_grad=c("lemonchiffon", "orange", "darkred"), 
+           attrs=attrs, add_scores = TRUE, k=2,
            title="Conformal Prediction set")
 ```
 ```{r}
-plotResult(spe.query$pred_set_hier[[64]], opi2, probs=p.test[64,],
-           col.grad=c("lemonchiffon", "orange", "darkred"), 
-           attrs=attrs, add.scores = TRUE, k=2,
+plotResult(spe_query$pred_set_hier[[64]], opi2, probs=p_test[64,],
+           col_grad=c("lemonchiffon", "orange", "darkred"), 
+           attrs=attrs, add_scores = TRUE, k=2,
            title="Hierarchical Prediction set")
 ```
 

@@ -5,35 +5,35 @@
 \title{Get conformal prediction sets}
 \usage{
 getPredictionSets(
-  x.query,
-  x.cal,
-  y.cal,
+  x_query,
+  x_cal,
+  y_cal,
   onto = NULL,
   alpha = 0.1,
   lambdas = seq(0.001, 0.999, length.out = 100),
-  follow.ontology = TRUE,
-  resample.cal = FALSE,
+  follow_ontology = TRUE,
+  resample_cal = FALSE,
   labels = NULL,
-  return.sc = NULL,
-  pr.name = "pred.set",
-  simplify.pred = FALSE,
+  return_sc = NULL,
+  pr_name = "pred.set",
+  simplify_pred = FALSE,
   BPPARAM = SerialParam()
 )
 }
 \arguments{
-\item{x.query}{query data for which we want to build prediction sets. Could
+\item{x_query}{query data for which we want to build prediction sets. Could
 be either a SingleCellExperiment object with the estimated probabilities for
 each cell type in the colData, or a named matrix of dimension \code{n x K},
 where \code{n} is the number of cells and \code{K} is the number of different
 labels. The colnames of the matrix have to correspond to the cell labels.}
 
-\item{x.cal}{calibration data. Could be either a
+\item{x_cal}{calibration data. Could be either a
 SingleCellExperiment object with the estimated probabilities for each cell
 type in the colData, or a named matrix of dimension \code{m x K}, where
 \code{m} is the number of cells and \code{K} is the number of different
 labels. The colnames of the matrix have to correspond to the cell labels.}
 
-\item{y.cal}{a vector of length \code{m} with the true labels of the cells in
+\item{y_cal}{a vector of length \code{m} with the true labels of the cells in
 the calibration data.}
 
 \item{onto}{the considered section of the cell ontology as an igraph object.}
@@ -41,30 +41,30 @@ the calibration data.}
 \item{alpha}{a number between 0 and 1 that indicates the allowed miscoverage}
 
 \item{lambdas}{a vector of possible lambda values to be considered. Necessary
-only when \code{follow.ontology=TRUE}.}
+only when \code{follow_ontology=TRUE}.}
 
-\item{follow.ontology}{If \code{TRUE}, then the function returns hierarchical
+\item{follow_ontology}{If \code{TRUE}, then the function returns hierarchical
 prediction sets that follow the cell ontology structure. If \code{FALSE}, it
 returns classical conformal prediction sets. See details.}
 
-\item{resample.cal}{Should the calibration dataset be resampled according to
+\item{resample_cal}{Should the calibration dataset be resampled according to
 the estimated relative frequencies of cell types in the query data?}
 
 \item{labels}{labels of different considered cell types. Necessary if
 \code{onto=NULL}, otherwise they are set equal to the leaf nodes of the
 provided graph.}
 
-\item{return.sc}{parameter the controls the output. If \code{TRUE}, the
+\item{return_sc}{parameter the controls the output. If \code{TRUE}, the
 function returns a SingleCellExperiment.
 If \code{FALSE}, the function returns a list. By default,
-it is set to \code{TRUE} when \code{x.query} is a SingleCellExperiment or
-SpatialExperiment object and to \code{FALSE} when \code{x.query} is a matrix.}
+it is set to \code{TRUE} when \code{x_query} is a SingleCellExperiment or
+SpatialExperiment object and to \code{FALSE} when \code{x_query} is a matrix.}
 
-\item{pr.name}{name of the colData variable in the returned
+\item{pr_name}{name of the colData variable in the returned
 SingleCellExperiment object that will contain the prediction
 sets. The default name is \code{pred.set}.}
 
-\item{simplify.pred}{if \code{TRUE}, the output will be the common ancestor
+\item{simplify_pred}{if \code{TRUE}, the output will be the common ancestor
 of the labels inserted into the prediction set. If \code{FALSE} (default),
 the output will be the set of the leaf labels.}
 
@@ -72,11 +72,11 @@ the output will be the set of the leaf labels.}
 \code{SerialParam()}.}
 }
 \value{
-\item{\code{return.sc = TRUE}}{the function \code{getPredictionSets} returns
+\item{\code{return_sc = TRUE}}{the function \code{getPredictionSets} returns
 a SingleCellExperiment or SpatialExperiment
 object with the prediction sets in the colData. The name of the variable
-containing the prediction sets is given by the parameter \code{pr.name}}
-\item{\code{return.sc = FALSE}}{the function \code{getPredictionSets} returns
+containing the prediction sets is given by the parameter \code{pr_name}}
+\item{\code{return_sc = FALSE}}{the function \code{getPredictionSets} returns
 a list of length equal
 to the number of cells in the test data. Each element of the list contains
 the prediction set for that cell.}
@@ -148,28 +148,28 @@ p <- matrix(rnorm(2000 * 4), ncol = 4)
 # by row
 p <- exp(p - apply(p, 1, max))
 p <- p / rowSums(p)
-cell.types <- c("T (CD4+)", "T (CD8+)", "B", "NK")
-colnames(p) <- cell.types
+cell_types <- c("T (CD4+)", "T (CD8+)", "B", "NK")
+colnames(p) <- cell_types
 
 # Take 1000 rows as calibration and 1000 as test
-p.cal <- p[1:1000, ]
-p.test <- p[1001:2000, ]
+p_cal <- p[1:1000, ]
+p_test <- p[1001:2000, ]
 
-# Randomly create the vector of real cell types for p.cal and p.test
-y.cal <- sample(cell.types, 1000, replace = TRUE)
-y.test <- sample(cell.types, 1000, replace = TRUE)
+# Randomly create the vector of real cell types for p_cal and p_test
+y_cal <- sample(cell_types, 1000, replace = TRUE)
+y_test <- sample(cell_types, 1000, replace = TRUE)
 
 # Obtain conformal prediction sets
-conf.sets <- getPredictionSets(
-    x.query = p.test,
-    x.cal = p.cal,
-    y.cal = y.cal,
+conf_sets <- getPredictionSets(
+    x_query = p_test,
+    x_cal = p_cal,
+    y_cal = y_cal,
     onto = NULL,
     alpha = 0.1,
-    follow.ontology = FALSE,
-    resample.cal = FALSE,
-    labels = cell.types,
-    return.sc = FALSE
+    follow_ontology = FALSE,
+    resample_cal = FALSE,
+    labels = cell_types,
+    return_sc = FALSE
 )
 
 }

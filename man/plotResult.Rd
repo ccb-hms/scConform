@@ -5,25 +5,25 @@
 \title{Plot prediction sets}
 \usage{
 plotResult(
-  pred.set,
+  pred_set,
   onto,
   probs = NULL,
-  col.grad = c("lemonchiffon", "orange", "darkred"),
+  col_grad = c("lemonchiffon", "orange", "darkred"),
   attrs = NULL,
   k = 4,
   title = NULL,
-  add.scores = TRUE,
+  add_scores = TRUE,
   ...
 )
 }
 \arguments{
-\item{pred.set}{character vector containing the labels in the prediction set}
+\item{pred_set}{character vector containing the labels in the prediction set}
 
 \item{onto}{ontology as an igraph}
 
 \item{probs}{estimated probabilities for the classes}
 
-\item{col.grad}{color to use to highlight the classes}
+\item{col_grad}{color to use to highlight the classes}
 
 \item{attrs}{other grtaphical attributes}
 
@@ -31,7 +31,7 @@ plotResult(
 
 \item{title}{title of the plot}
 
-\item{add.scores}{boolean. If \code{TRUE}, estimated probabilities are
+\item{add_scores}{boolean. If \code{TRUE}, estimated probabilities are
 added to the name of the classes}
 
 \item{...}{general commands to be sent to plot}
