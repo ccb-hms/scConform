@@ -215,17 +215,21 @@ spe_baysor <- spe_baysor[, spe_baysor$cell_type %notin% c(
     "Myenteric Plexus"
 )]
 spe_baysor
+
+# See frequencies of cell types
 table(spe_baysor$cell_type)
 ```
 
 Now randomly split the data into reference and query data. 
 ```{r}
-set.seed(1635)
-ref <- sample(1:ncol(spe_baysor), 1500)
+set.seed(1636)
+ref <- sample(seq_len(ncol(spe_baysor)), 600) 
 
 spe_ref <- spe_baysor[, ref]
 spe_query <- spe_baysor[, -ref]
+# Reference data
 spe_ref
+# Query data
 spe_query
 ```
 
@@ -233,15 +237,15 @@ spe_query
 ## Fit a classification model
 
 We now need to build a classification model. To this aim, we'll draw a random
-sample of 500 cells from the reference data, and train a multinomial
+sample of 300 cells from the reference data, and train a multinomial
 model on those. As explanatory variables we'll use the 50 most variable genes.
 For this step, every statistical model or machine learning method can be used,
 as long as it provides also estimated probabilities for each class.
 
 ```{r model, warning=FALSE}
-# Randomly select 500 cells
-set.seed(1703)
-train <- sample(seq_len(ncol(spe_ref)), 500)
+# Randomly select 300 cells
+set.seed(1704)
+train <- sample(seq_len(ncol(spe_ref)), 300)
 # Training data
 spe_train <- spe_ref[, train]
 spe_train
@@ -279,9 +283,12 @@ procedure.
 Given $\hat{f}$ and the calibration data, the objective of conformal inference 
 is to build, for a new non-annotated cell $X_{new}$, a prediction set 
 $C(X_{new})$ that satisfies
-$$
-P(Y_{new} \in C(X_{n+1})) \geq 1-\alpha,
-$$
+
+\begin{equation}
+P(Y_{new} \in C(X_{new})) \geq 1-\alpha,
+(\#eq:cov)
+\end{equation}
+
 where $Y_{new}$ is the true label of the new cell and $\alpha$ is a user-chosen 
 error level. The algorithm for split conformal inference is the following:
 
@@ -334,7 +341,10 @@ prediction sets obtained via split conformal inference.
 The parameter `onto` is not necessary with this method, but if the ontology is
 provided then it will be used by the function to retrieve the considered cell 
 types. Alternatively, we can explicitly provide the labels with the
-parameter `labels`.
+parameter `labels`. The parameter `alpha` indicates the allowed miscoverage
+percentage (see \@ref(eq:cov)). For example, if we set `alpha=0.1`, it means 
+that at most 10% of the prediction sets we obtain will not include the true 
+label.
 
 ```{r predsets}
 labels <- colnames(p_test)
@@ -347,8 +357,15 @@ sets <- getPredictionSets(
     labels = labels
 )
 
+# See the first six prediction sets
 sets[1:6]
+```
+Since in this example the cell labels are available, we can explicitly check 
+that \@ref(eq:cov) is satisfied by computing the 
+proportion of sets that include the true label. We set `alpha=0.1`, so we
+expect this proportion to be higher than 0.9.
 
+```{r cvg}
 # Check coverage
 cvg <- rep(NA, length(sets))
 for (i in seq_len(length(sets))) {
@@ -356,6 +373,7 @@ for (i in seq_len(length(sets))) {
 }
 mean(cvg)
 ```
+
 
 As an alternative, we can provide as input a `SingleCellExperiment` object. 
 In this case, it needs to have the estimated probabilities for 
@@ -388,8 +406,8 @@ spe_query <- getPredictionSets(
     labels = labels
 )
 
+# See the new variable pred_set into the colData
 head(colData(spe_query))
-head(spe_query$pred_set)
 ```
 
 # Method 2: exploit the cell ontology
@@ -438,6 +456,13 @@ spe_query <- getPredictionSets(
     simplify_pred = FALSE
 )
 
+# See the first six prediction sets
+head(spe_query$pred_set_hier)
+```
+
+Also in this case, we can check the coverage:
+
+```{r cvg1}
 # Check coverage
 cvg1 <- rep(NA, length(spe_query$pred_set_hier))
 for (i in seq_len(length(spe_query$pred_set_hier))) {
@@ -445,10 +470,9 @@ for (i in seq_len(length(spe_query$pred_set_hier))) {
 }
 
 mean(cvg1)
-head(spe_query$pred_set_hier)
 ```
 
-As an alternative, we can choose to return, only the common ancestor, instead 
+As an alternative, we can choose to return only the common ancestor, instead 
 of the entire set of predicted labels. This can be done directly in the 
 function by setting `simplify_pred=TRUE`.
 Alternatively, we can convert the obtained prediction sets invoking
@@ -470,14 +494,14 @@ ask to color the labels included in the prediction set. Let's compare
 the prediction sets for one cell obtained with the two methods
 
 ```{r}
-plotResult(spe_query$pred_set[[64]], opi2,
+plotResult(spe_query$pred_set[[75]], opi2,
     col_grad = "pink", attrs = attrs, add_scores = FALSE,
     title = "Conformal Prediction set"
 )
 ```
 
 ```{r}
-plotResult(spe_query$pred_set_hier[[64]], opi2,
+plotResult(spe_query$pred_set_hier[[75]], opi2,
     col_grad = "pink", attrs = attrs, add_scores = FALSE,
     title = "Hierarchical prediction set"
 )
@@ -485,42 +509,26 @@ plotResult(spe_query$pred_set_hier[[64]], opi2,
 
 We can now instead give as input also the estimated probabilities and a 
 gradient. The function will color the cells according to the gradient, with 
-stronger colors corresponding to higher probabilities.
+stronger colors corresponding to higher probabilities. If `add_scores=TRUE`,
+then the estimated probabilities will be added to the labels. 
 
 ```{r}
-plotResult(spe_query$pred_set[[64]], opi2,
-    probs = p_test[64, ],
+plotResult(spe_query$pred_set[[75]], opi2,
+    probs = p_test[75, ],
     col_grad = c("lemonchiffon", "orange", "darkred"),
-    attrs = attrs, add_scores = FALSE,
+    attrs = attrs, add_scores = TRUE,
     title = "Conformal Prediction set"
 )
 ```
 ```{r}
-plotResult(spe_query$pred_set_hier[[64]], opi2,
-    probs = p_test[64, ],
+plotResult(spe_query$pred_set_hier[[75]], opi2,
+    probs = p_test[75, ],
     col_grad = c("lemonchiffon", "orange", "darkred"),
-    attrs = attrs, add_scores = FALSE,
+    attrs = attrs, add_scores = TRUE,
     title = "Hierarchical Prediction set"
 )
 ```
 
-Lastly, we can explicitly add to the labels the estimated probabilities
-```{r}
-plotResult(spe_query$pred_set[[64]], opi2,
-    probs = p_test[64, ],
-    col_grad = c("lemonchiffon", "orange", "darkred"),
-    attrs = attrs, add_scores = TRUE, k = 2,
-    title = "Conformal Prediction set"
-)
-```
-```{r}
-plotResult(spe_query$pred_set_hier[[64]], opi2,
-    probs = p_test[64, ],
-    col_grad = c("lemonchiffon", "orange", "darkred"),
-    attrs = attrs, add_scores = TRUE, k = 2,
-    title = "Hierarchical Prediction set"
-)
-```
 
 
 # R.session Info {.unnumbered}

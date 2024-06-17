@@ -172,14 +172,14 @@
     idx1 <- idx2 <- NULL
     for (i in labels) {
         category <- which(y_cal == i)
-        if (!is.na(des_freq1[i])) {
+        if (!is.na(des_freq1[i]) & length(category)>0) {
             idx_category1 <- sample(category,
                 size = des_freq1[i],
                 replace = TRUE
             )
             idx1 <- c(idx1, idx_category1)
         }
-        if (!is.na(des_freq2[i])) {
+        if (!is.na(des_freq2[i]) & length(category)>0) {
             idx_category2 <- sample(category,
                 size = des_freq2[i],
                 replace = TRUE
