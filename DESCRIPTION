@@ -27,7 +27,6 @@ Suggests:
     SingleCellExperiment,
     scran
 Imports:
-    foreach,
     igraph,
     stats,
     SummarizedExperiment,

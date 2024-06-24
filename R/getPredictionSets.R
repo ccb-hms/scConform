@@ -141,7 +141,6 @@
 #'     return_sc = FALSE
 #' )
 #'
-#' @importFrom foreach %dopar% foreach
 #' @importFrom SummarizedExperiment colData colData<-
 #' @importFrom igraph V distances degree
 #' @importFrom stats quantile

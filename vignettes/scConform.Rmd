@@ -85,7 +85,6 @@ if (BiocManager::version() >= "3.20") {
 library(scConform)
 library(SingleCellExperiment)
 library(VGAM)
-library(foreach)
 library(ontoProc)
 library(MerfishData)
 library(igraph)
