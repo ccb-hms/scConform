@@ -25,7 +25,7 @@
 #' @param follow_ontology If \code{TRUE}, then the function returns hierarchical
 #' prediction sets that follow the cell ontology structure. If \code{FALSE}, it
 #' returns classical conformal prediction sets. See details.
-#' @param resample_cal Should the calibration dataset be resampled according to
+#' @param resample Should the calibration dataset be resampled according to
 #' the estimated relative frequencies of cell types in the query data?
 #' @param labels labels of different considered cell types. Necessary if
 #' \code{onto=NULL}, otherwise they are set equal to the leaf nodes of the
@@ -38,7 +38,7 @@
 #' @param pr_name name of the colData variable in the returned
 #' SingleCellExperiment object that will contain the prediction
 #' sets. The default name is \code{pred.set}.
-#' @param simplify_pred if \code{TRUE}, the output will be the common ancestor
+#' @param simplify if \code{TRUE}, the output will be the common ancestor
 #' of the labels inserted into the prediction set. If \code{FALSE} (default),
 #' the output will be the set of the leaf labels.
 #' @param BPPARAM BiocParallel instance for parallel computing. Default is
@@ -136,7 +136,7 @@
 #'     onto = NULL,
 #'     alpha = 0.1,
 #'     follow_ontology = FALSE,
-#'     resample_cal = FALSE,
+#'     resample = FALSE,
 #'     labels = cell_types,
 #'     return_sc = FALSE
 #' )
@@ -151,11 +151,11 @@ getPredictionSets <- function(
         x_query, x_cal, y_cal, onto = NULL, alpha = 0.1,
         lambdas = seq(0.001, 0.999, length.out = 100),
         follow_ontology = TRUE,
-        resample_cal = FALSE,
+        resample = FALSE,
         labels = NULL,
         return_sc = NULL,
         pr_name = "pred.set",
-        simplify_pred = FALSE,
+        simplify = FALSE,
         BPPARAM = SerialParam()) {
     ## Sanity checks
 
@@ -187,8 +187,8 @@ getPredictionSets <- function(
         }
     }
 
-    if (!follow_ontology & simplify_pred) {
-        stop("If follow_ontology=FALSE, please set simplify_pred=FALSE")
+    if (!follow_ontology & simplify) {
+        stop("If follow_ontology=FALSE, please set simplify=FALSE")
     }
 
     ## If labels parameter is NULL, retrieve labels from the ontology
@@ -210,7 +210,7 @@ getPredictionSets <- function(
         p_cal <- x_cal
     }
 
-    if (!resample_cal) {
+    if (!resample) {
         if (follow_ontology) {
             pred_sets <- .getHierarchicalPredSets(
                 p_cal = p_cal, p_test = p_query,
@@ -227,7 +227,7 @@ getPredictionSets <- function(
         }
     }
 
-    if (resample_cal) {
+    if (resample) {
         data <- .resampleTwo(
             p_cal = p_cal, p_test = p_query, y_cal = y_cal,
             labels = labels
@@ -272,11 +272,11 @@ getPredictionSets <- function(
     }
 
     ## Transform prediction with leaf nodes to prediction sets with the
-    ## common ancestor if simplify_pred=TRUE
-    if (simplify_pred) {
+    ## common ancestor if simplify=TRUE
+    if (simplify) {
         pred_sets1 <- vapply(
             pred_sets,
-            function(x) returnCommonAncestor(x, onto),
+            function(x) getCommonAncestor(x, onto),
             character(1)
         )
         ## Check for ramification. If there is a ramification in the ontology
