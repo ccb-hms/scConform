@@ -452,7 +452,7 @@ spe_query <- getPredictionSets(
     follow_ontology = TRUE,
     pr_name = "pred_set_hier",
     BPPARAM = MulticoreParam(workers = 2),
-    simplify_pred = FALSE
+    simplify = FALSE
 )
 
 # See the first six prediction sets
@@ -473,14 +473,14 @@ mean(cvg1)
 
 As an alternative, we can choose to return only the common ancestor, instead 
 of the entire set of predicted labels. This can be done directly in the 
-function by setting `simplify_pred=TRUE`.
+function by setting `simplify=TRUE`.
 Alternatively, we can convert the obtained prediction sets invoking
-the function `returnCommonAncestor`.
+the function `getCommonAncestor`.
 
 ```{r common-ancestor}
 spe_query$pred_set_hier_simp <- vapply(
     spe_query$pred_set_hier,
-    function(x) returnCommonAncestor(x, opi2),
+    function(x) getCommonAncestor(x, opi2),
     character(1)
 )
 head(spe_query$pred_set_hier_simp)

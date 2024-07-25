@@ -16,12 +16,12 @@
 #' )
 #' # Let's consider this prediction set
 #' pred_set <- c("golden", "labrador", "cocker")
-#' com_anc <- returnCommonAncestor(pred_set, onto)
+#' com_anc <- getCommonAncestor(pred_set, onto)
 #' @importFrom igraph V distances degree
 #' @export
 
 # Function to return the common ancestor instead of the single leaf nodes
-returnCommonAncestor <- function(pred_set, onto) {
+getCommonAncestor <- function(pred_set, onto) {
     com_anc <- Reduce(intersect, lapply(pred_set, function(node) {
         .ancestors(node, onto)
     }))

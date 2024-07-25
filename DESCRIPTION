@@ -2,9 +2,15 @@ Package: scConform
 Type: Package
 Title: Conformal Inference For Cell Type Annotation
 Version: 0.99.1
-Authors@R: person("Corbetta", "Daniela", 
+Authors@R: c(
+                  person("Daniela", "Corbetta", 
                   email = "daniela.corbetta@phd.unipd.it", 
-                  role = c("aut", "cre"))
+                  role = c("aut", "cre")),
+                  person("Tram", "Nguyen", role = "ctb"),
+                  person("Anthony", "Christidis", role = "ctb"), 
+                  person("Nitesh", "Turaga", role = "ctb"),
+                  person("Ludwig", "Geistlinger", role = "ctb")
+           )
 Description: Builds prediction interval for cell type annotation using conformal 
     inference and conformal risk control.
     It provides two main methods. The first one gives prediction intervals with 

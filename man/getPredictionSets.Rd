@@ -12,11 +12,11 @@ getPredictionSets(
   alpha = 0.1,
   lambdas = seq(0.001, 0.999, length.out = 100),
   follow_ontology = TRUE,
-  resample_cal = FALSE,
+  resample = FALSE,
   labels = NULL,
   return_sc = NULL,
   pr_name = "pred.set",
-  simplify_pred = FALSE,
+  simplify = FALSE,
   BPPARAM = SerialParam()
 )
 }
@@ -47,7 +47,7 @@ only when \code{follow_ontology=TRUE}.}
 prediction sets that follow the cell ontology structure. If \code{FALSE}, it
 returns classical conformal prediction sets. See details.}
 
-\item{resample_cal}{Should the calibration dataset be resampled according to
+\item{resample}{Should the calibration dataset be resampled according to
 the estimated relative frequencies of cell types in the query data?}
 
 \item{labels}{labels of different considered cell types. Necessary if
@@ -64,7 +64,7 @@ SpatialExperiment object and to \code{FALSE} when \code{x_query} is a matrix.}
 SingleCellExperiment object that will contain the prediction
 sets. The default name is \code{pred.set}.}
 
-\item{simplify_pred}{if \code{TRUE}, the output will be the common ancestor
+\item{simplify}{if \code{TRUE}, the output will be the common ancestor
 of the labels inserted into the prediction set. If \code{FALSE} (default),
 the output will be the set of the leaf labels.}
 
@@ -167,7 +167,7 @@ conf_sets <- getPredictionSets(
     onto = NULL,
     alpha = 0.1,
     follow_ontology = FALSE,
-    resample_cal = FALSE,
+    resample = FALSE,
     labels = cell_types,
     return_sc = FALSE
 )
