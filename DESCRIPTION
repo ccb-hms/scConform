@@ -4,10 +4,9 @@ Title: Conformal Inference For Cell Type Annotation
 Version: 0.99.1
 Authors@R: c(
                   person("Daniela", "Corbetta", 
-                  email = "daniela.corbetta@phd.unipd.it", 
+                  email = "daniela.corbetta@unipd.it", 
                   role = c("aut", "cre")),
                   person("Tram", "Nguyen", role = "ctb"),
-                  person("Anthony", "Christidis", role = "ctb"), 
                   person("Nitesh", "Turaga", role = "ctb"),
                   person("Ludwig", "Geistlinger", role = "ctb")
            )
@@ -31,7 +30,8 @@ Suggests:
     doParallel,
     scuttle,
     SingleCellExperiment,
-    scran
+    scran,
+    testthat (>= 3.0.0)
 Imports:
     igraph,
     stats,
@@ -39,10 +39,11 @@ Imports:
     BiocParallel,
     Rgraphviz
 VignetteBuilder: knitr
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Encoding: UTF-8
 biocViews: 
     SingleCell,
     Annotation
 URL: https://github.com/ccb-hms/scConform
 BugReports: https://github.com/ccb-hms/scConform/issues
+Config/testthat/edition: 3

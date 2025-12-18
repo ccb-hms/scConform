@@ -41,6 +41,21 @@
 #' @param simplify if \code{TRUE}, the output will be the common ancestor
 #' of the labels inserted into the prediction set. If \code{FALSE} (default),
 #' the output will be the set of the leaf labels.
+#' @param method character string or function specifying how hierarchical
+#' prediction sets are constructed when \code{follow_ontology=TRUE}.
+#' If a character string, it must be one of:
+#' \describe{
+#'   \item{\code{"full"}}{the default hierarchical construction described in the
+#'   Details section, which guarantees non-empty prediction sets;}
+#'   \item{\code{"step"}}{a construction that includes all ancestors up to a
+#'   fixed number of steps above the predicted class;}
+#'   \item{\code{"rank"}}{a construction that ranks leaf nodes by predicted
+#'   probability, accumulates probability until a threshold is reached, and
+#'   then expands the lowest common ancestor of the selected leaves.}
+#' }
+#' Alternatively, \code{method} can be a user-defined function with signature
+#' \code{function(lambda, pred, onto)}, returning a character vector of leaf
+#' labels defining the prediction set.
 #' @param BPPARAM BiocParallel instance for parallel computing. Default is
 #' \code{SerialParam()}.
 #' @return
@@ -101,7 +116,12 @@
 #' \eqn{\lambda}. To choose \eqn{\lambda}, we follow eq. (4) in Angelopoulus et
 #' al. (2023), considering the miscoverage as loss function. In this way, it is
 #' still guaranteed that
-#' \deqn{P(Y_{n+1}\notin C_\lambda (X_{n+1})) \leq \alpha.}}
+#' \deqn{P(Y_{n+1}\notin C_\lambda (X_{n+1})) \leq \alpha.}
+#' The construction described above corresponds to the default choice
+#' \code{method = "full"}. Other values of \code{method} implement alternative
+#' nested prediction-set constructions that incorporate the ontology structure
+#' in different ways. All methods are calibrated using the same conformal
+#' risk-control procedure to select the threshold parameter \eqn{\lambda}.}
 #' @references For an introduction to conformal prediction, see
 #' Angelopoulos, Anastasios N., and Stephen Bates. "A gentle introduction to
 #' conformal prediction and distribution-free uncertainty quantification."
@@ -156,6 +176,7 @@ getPredictionSets <- function(
         return_sc = NULL,
         pr_name = "pred.set",
         simplify = FALSE,
+        method = "full",
         BPPARAM = SerialParam()) {
     ## Sanity checks
 
@@ -191,6 +212,23 @@ getPredictionSets <- function(
         stop("If follow_ontology=FALSE, please set simplify=FALSE")
     }
 
+    # Validate method
+    if (is.character(method)) {
+      allowed_methods <- c("full", "step", "rank")
+      if (length(method) != 1 || !method %in% allowed_methods) {
+        stop(
+          "If 'method' is a character, it must be one of: ",
+          paste(allowed_methods, collapse = ", ")
+        )
+      }
+    } else if (is.function(method)) {
+      # ok: user-supplied prediction-set constructor
+    } else {
+      stop("'method' must be either a character string or a function")
+    }
+
+
+
     ## If labels parameter is NULL, retrieve labels from the ontology
     if (is.null(labels)) {
         labels <- V(onto)$name[degree(onto, mode = "out") == 0]
@@ -217,7 +255,8 @@ getPredictionSets <- function(
                 y_cal = y_cal, onto = onto,
                 alpha = alpha,
                 lambdas = lambdas,
-                BPPARAM = BPPARAM
+                BPPARAM = BPPARAM,
+                method = method
             )
         } else {
             pred_sets <- .getConformalPredSets(
@@ -240,7 +279,8 @@ getPredictionSets <- function(
                 onto = onto,
                 alpha = alpha,
                 lambdas = lambdas,
-                BPPARAM = BPPARAM
+                BPPARAM = BPPARAM,
+                method = method
             )
             pred_sets2 <- .getHierarchicalPredSets(
                 p_cal = data$p_cal1,
@@ -249,7 +289,8 @@ getPredictionSets <- function(
                 onto = onto,
                 alpha = alpha,
                 lambdas = lambdas,
-                BPPARAM = BPPARAM
+                BPPARAM = BPPARAM,
+                method = method
             )
             pred_sets <- c(pred_sets1, pred_sets2)
         } else {

@@ -17,6 +17,7 @@ getPredictionSets(
   return_sc = NULL,
   pr_name = "pred.set",
   simplify = FALSE,
+  method = "full",
   BPPARAM = SerialParam()
 )
 }
@@ -67,6 +68,22 @@ sets. The default name is \code{pred.set}.}
 \item{simplify}{if \code{TRUE}, the output will be the common ancestor
 of the labels inserted into the prediction set. If \code{FALSE} (default),
 the output will be the set of the leaf labels.}
+
+\item{method}{character string or function specifying how hierarchical
+prediction sets are constructed when \code{follow_ontology=TRUE}.
+If a character string, it must be one of:
+\describe{
+  \item{\code{"full"}}{the default hierarchical construction described in the
+  Details section, which guarantees non-empty prediction sets;}
+  \item{\code{"step"}}{a construction that includes all ancestors up to a
+  fixed number of steps above the predicted class;}
+  \item{\code{"rank"}}{a construction that ranks leaf nodes by predicted
+  probability, accumulates probability until a threshold is reached, and
+  then expands the lowest common ancestor of the selected leaves.}
+}
+Alternatively, \code{method} can be a user-defined function with signature
+\code{function(lambda, pred, onto)}, returning a character vector of leaf
+labels defining the prediction set.}
 
 \item{BPPARAM}{BiocParallel instance for parallel computing. Default is
 \code{SerialParam()}.}
@@ -138,7 +155,12 @@ ones that contain \eqn{\hat{y}(x)} for which the score is less than
 \eqn{\lambda}. To choose \eqn{\lambda}, we follow eq. (4) in Angelopoulus et
 al. (2023), considering the miscoverage as loss function. In this way, it is
 still guaranteed that
-\deqn{P(Y_{n+1}\notin C_\lambda (X_{n+1})) \leq \alpha.}}
+\deqn{P(Y_{n+1}\notin C_\lambda (X_{n+1})) \leq \alpha.}
+The construction described above corresponds to the default choice
+\code{method = "full"}. Other values of \code{method} implement alternative
+nested prediction-set constructions that incorporate the ontology structure
+in different ways. All methods are calibrated using the same conformal
+risk-control procedure to select the threshold parameter \eqn{\lambda}.}
 }
 \examples{
 # random p matrix
