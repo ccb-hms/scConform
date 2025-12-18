@@ -261,7 +261,7 @@ to the names used for the annotation.</p>
 <span><span class="co">## Plot the final ontology</span></span>
 <span><span class="va">attrs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>node <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="st">"box"</span>, fontsize <span class="op">=</span> <span class="fl">15</span>, fixedsize <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">gr1</span>, attrs <span class="op">=</span> <span class="va">attrs</span><span class="op">)</span></span></code></pre></div>
-<p><img src="scConform_files/figure-html/build-ontology-1.png" width="700"></p>
+<p><img src="scConform_files/figure-html/build-ontology-1.png" class="r-plt" width="700"></p>
 </div>
 <div class="section level3">
 <h3 id="preprocess-data">Preprocess data<a class="anchor" aria-label="anchor" href="#preprocess-data"></a>
@@ -708,6 +708,7 @@ the prediction sets in the colData.</p>
 <span>    BPPARAM <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/MulticoreParam-class.html" class="external-link">MulticoreParam</a></span><span class="op">(</span>workers <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>    simplify <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; Calibration complete. Selected lambda_hat = 0.908272727272727</span></span>
 <span></span>
 <span><span class="co"># See the first six prediction sets</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">spe_query</span><span class="op">$</span><span class="va">pred_set_hier</span><span class="op">)</span></span>
@@ -769,13 +770,13 @@ methods</p>
 <span>    col_grad <span class="op">=</span> <span class="st">"pink"</span>, attrs <span class="op">=</span> <span class="va">attrs</span>, add_scores <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>    title <span class="op">=</span> <span class="st">"Conformal Prediction set"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="scConform_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
+<p><img src="scConform_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" width="700"></p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotResult.html">plotResult</a></span><span class="op">(</span><span class="va">spe_query</span><span class="op">$</span><span class="va">pred_set_hier</span><span class="op">[[</span><span class="fl">75</span><span class="op">]</span><span class="op">]</span>, <span class="va">opi2</span>,</span>
 <span>    col_grad <span class="op">=</span> <span class="st">"pink"</span>, attrs <span class="op">=</span> <span class="va">attrs</span>, add_scores <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>    title <span class="op">=</span> <span class="st">"Hierarchical prediction set"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="scConform_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
+<p><img src="scConform_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" width="700"></p>
 <p>We can now instead give as input also the estimated probabilities and
 a gradient. The function will color the cells according to the gradient,
 with stronger colors corresponding to higher probabilities. If
@@ -788,7 +789,7 @@ added to the labels.</p>
 <span>    attrs <span class="op">=</span> <span class="va">attrs</span>, add_scores <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    title <span class="op">=</span> <span class="st">"Conformal Prediction set"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="scConform_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
+<p><img src="scConform_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" width="700"></p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotResult.html">plotResult</a></span><span class="op">(</span><span class="va">spe_query</span><span class="op">$</span><span class="va">pred_set_hier</span><span class="op">[[</span><span class="fl">75</span><span class="op">]</span><span class="op">]</span>, <span class="va">opi2</span>,</span>
 <span>    probs <span class="op">=</span> <span class="va">p_test</span><span class="op">[</span><span class="fl">75</span>, <span class="op">]</span>,</span>
@@ -796,7 +797,7 @@ added to the labels.</p>
 <span>    attrs <span class="op">=</span> <span class="va">attrs</span>, add_scores <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    title <span class="op">=</span> <span class="st">"Hierarchical Prediction set"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="scConform_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
+<p><img src="scConform_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" width="700"></p>
 </div>
 <div class="section level2">
 <h2 class="unnumbered" id="r-session-info">R.session Info<a class="anchor" aria-label="anchor" href="#r-session-info"></a>
@@ -826,74 +827,74 @@ attached base packages:
 
 other attached packages:
  [1] BiocParallel_1.38.0         scran_1.32.0               
- [3] scuttle_1.14.0              igraph_2.0.3               
+ [3] scuttle_1.14.0              igraph_2.2.1               
  [5] MerfishData_1.6.0           SpatialExperiment_1.14.0   
- [7] EBImage_4.46.0              ontoProc_1.26.0            
- [9] ontologyIndex_2.12          VGAM_1.1-11                
+ [7] EBImage_4.46.0              ontoProc_1.26.4            
+ [9] ontologyIndex_2.12          VGAM_1.1-14                
 [11] SingleCellExperiment_1.26.0 SummarizedExperiment_1.34.0
-[13] Biobase_2.64.0              GenomicRanges_1.56.1       
+[13] Biobase_2.64.0              GenomicRanges_1.56.2       
 [15] GenomeInfoDb_1.40.1         IRanges_2.38.1             
 [17] S4Vectors_0.42.1            BiocGenerics_0.50.0        
-[19] MatrixGenerics_1.16.0       matrixStats_1.3.0          
+[19] MatrixGenerics_1.16.0       matrixStats_1.5.0          
 [21] scConform_0.99.1            BiocStyle_2.32.1           
 
 loaded via a namespace (and not attached):
-  [1] jsonlite_1.8.8            magrittr_2.0.3           
-  [3] magick_2.8.4              rmarkdown_2.27           
-  [5] fs_1.6.4                  zlibbioc_1.50.0          
-  [7] ragg_1.3.2                vctrs_0.6.5              
+  [1] jsonlite_2.0.0            magrittr_2.0.4           
+  [3] magick_2.9.0              rmarkdown_2.30           
+  [5] fs_1.6.6                  zlibbioc_1.50.0          
+  [7] ragg_1.5.0                vctrs_0.6.5              
   [9] memoise_2.0.1             DelayedMatrixStats_1.26.0
- [11] RCurl_1.98-1.16           htmltools_0.5.8.1        
+ [11] RCurl_1.98-1.17           htmltools_0.5.9          
  [13] S4Arrays_1.4.1            AnnotationHub_3.12.0     
- [15] curl_5.2.1                BiocNeighbors_1.22.0     
- [17] SparseArray_1.4.8         sass_0.4.9               
- [19] bslib_0.7.0               htmlwidgets_1.6.4        
+ [15] curl_7.0.0                BiocNeighbors_1.22.0     
+ [17] SparseArray_1.4.8         sass_0.4.10              
+ [19] bslib_0.9.0               htmlwidgets_1.6.4        
  [21] desc_1.4.3                cachem_1.1.0             
- [23] mime_0.12                 lifecycle_1.0.4          
+ [23] mime_0.13                 lifecycle_1.0.4          
  [25] pkgconfig_2.0.3           rsvd_1.0.5               
- [27] Matrix_1.7-0              R6_2.5.1                 
+ [27] Matrix_1.7-4              R6_2.6.1                 
  [29] fastmap_1.2.0             GenomeInfoDbData_1.2.12  
- [31] shiny_1.8.1.1             digest_0.6.36            
- [33] AnnotationDbi_1.66.0      dqrng_0.4.1              
- [35] irlba_2.3.5.1             ExperimentHub_2.12.0     
- [37] textshaping_0.4.0         RSQLite_2.3.7            
- [39] beachmat_2.20.0           filelock_1.0.3           
- [41] fansi_1.0.6               httr_1.4.7               
- [43] abind_1.4-5               compiler_4.4.1           
- [45] withr_3.0.0               bit64_4.0.5              
- [47] tiff_0.1-12               DBI_1.2.3                
- [49] highr_0.11                rappdirs_0.3.3           
- [51] DelayedArray_0.30.1       rjson_0.2.21             
+ [31] shiny_1.12.1              digest_0.6.39            
+ [33] AnnotationDbi_1.66.0      rprojroot_2.1.1          
+ [35] dqrng_0.4.1               irlba_2.3.5.1            
+ [37] ExperimentHub_2.12.0      textshaping_1.0.4        
+ [39] RSQLite_2.4.5             beachmat_2.20.0          
+ [41] filelock_1.0.3            httr_1.4.7               
+ [43] abind_1.4-8               compiler_4.4.1           
+ [45] here_1.0.2                withr_3.0.2              
+ [47] bit64_4.6.0-1             tiff_0.1-12              
+ [49] DBI_1.2.3                 rappdirs_0.3.3           
+ [51] DelayedArray_0.30.1       rjson_0.2.23             
  [53] bluster_1.14.0            tools_4.4.1              
- [55] httpuv_1.6.15             glue_1.7.0               
- [57] promises_1.3.0            grid_4.4.1               
- [59] cluster_2.1.6             generics_0.1.3           
- [61] metapod_1.12.0            BiocSingular_1.20.0      
- [63] ScaledMatrix_1.12.0       utf8_1.2.4               
+ [55] otel_0.2.0                httpuv_1.6.16            
+ [57] glue_1.8.0                promises_1.5.0           
+ [59] grid_4.4.1                cluster_2.1.8.1          
+ [61] generics_0.1.4            BiocSingular_1.20.0      
+ [63] ScaledMatrix_1.12.0       metapod_1.12.0           
  [65] XVector_0.44.0            BiocVersion_3.19.1       
- [67] pillar_1.9.0              limma_3.60.4             
- [69] BumpyMatrix_1.12.0        later_1.3.2              
+ [67] pillar_1.11.1             limma_3.60.6             
+ [69] BumpyMatrix_1.12.0        later_1.4.4              
  [71] dplyr_1.1.4               BiocFileCache_2.12.0     
- [73] lattice_0.22-6            bit_4.0.5                
- [75] tidyselect_1.2.1          locfit_1.5-9.10          
- [77] Biostrings_2.72.1         knitr_1.48               
- [79] bookdown_0.40             edgeR_4.2.1              
- [81] ontologyPlot_1.7          xfun_0.46                
- [83] statmod_1.5.0             DT_0.33                  
+ [73] lattice_0.22-7            bit_4.6.0                
+ [75] tidyselect_1.2.1          locfit_1.5-9.12          
+ [77] Biostrings_2.72.1         knitr_1.50               
+ [79] bookdown_0.46             edgeR_4.2.2              
+ [81] ontologyPlot_1.7          xfun_0.55                
+ [83] statmod_1.5.1             DT_0.34.0                
  [85] UCSC.utils_1.0.0          fftwtools_0.9-11         
- [87] paintmap_1.0              yaml_2.3.9               
- [89] evaluate_0.24.0           codetools_0.2-20         
- [91] tibble_3.2.1              Rgraphviz_2.48.0         
- [93] BiocManager_1.30.23       graph_1.82.0             
- [95] cli_3.6.3                 xtable_1.8-4             
- [97] reticulate_1.38.0         systemfonts_1.1.0        
- [99] jquerylib_0.1.4           Rcpp_1.0.13              
-[101] dbplyr_2.5.0              png_0.1-8                
-[103] parallel_4.4.1            pkgdown_2.1.0            
-[105] blob_1.2.4                jpeg_0.1-10              
-[107] sparseMatrixStats_1.16.0  bitops_1.0-7             
-[109] purrr_1.0.2               crayon_1.5.3             
-[111] rlang_1.1.4               KEGGREST_1.44.1          </code></pre>
+ [87] paintmap_1.0              yaml_2.3.12              
+ [89] evaluate_1.0.5            codetools_0.2-20         
+ [91] tibble_3.3.0              Rgraphviz_2.48.0         
+ [93] BiocManager_1.30.27       graph_1.82.0             
+ [95] cli_3.6.5                 xtable_1.8-4             
+ [97] reticulate_1.44.1         systemfonts_1.3.1        
+ [99] jquerylib_0.1.4           Rcpp_1.1.0               
+[101] dbplyr_2.5.1              png_0.1-8                
+[103] parallel_4.4.1            pkgdown_2.2.0            
+[105] blob_1.2.4                jpeg_0.1-11              
+[107] sparseMatrixStats_1.16.0  bitops_1.0-9             
+[109] purrr_1.2.0               crayon_1.5.3             
+[111] rlang_1.1.6               KEGGREST_1.44.1          </code></pre>
 </div>
   </div>
 
@@ -912,7 +913,7 @@ loaded via a namespace (and not attached):
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
       </footer>
