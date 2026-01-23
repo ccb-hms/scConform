@@ -52,9 +52,24 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { os: ubuntu-latest, r: '4.5', bioc: '3.22', cont: "bioconductor/bioconductor_docker:RELEASE_3_23", rspm: "https://packagemanager.rstudio.com/cran/__linux__/jammy/latest" }
-          - { os: macOS-latest, r: '4.5', bioc: '3.22'}
-          - { os: windows-latest, r: '4.5', bioc: '3.22'}
+          # Linux release
+          - { os: ubuntu-latest,   r: '4.5',   bioc: '3.22',  cont: "bioconductor/bioconductor_docker:RELEASE_3_22", rspm: "https://packagemanager.rstudio.com/cran/__linux__/jammy/latest" }
+      
+          # Linux devel
+          - { os: ubuntu-latest,   r: 'devel', bioc: 'devel', cont: "bioconductor/bioconductor_docker:devel",        rspm: "https://packagemanager.rstudio.com/cran/__linux__/jammy/latest" }
+      
+          # macOS release
+          - { os: macOS-latest,    r: '4.5',   bioc: '3.22' }
+      
+          # macOS devel
+          - { os: macOS-latest,    r: 'devel', bioc: 'devel' }
+      
+          # Windows release
+          - { os: windows-latest,  r: '4.5',   bioc: '3.22' }
+      
+          # Windows devel
+          - { os: windows-latest,  r: 'devel', bioc: 'devel' }
+
           ## Check https://github.com/r-lib/actions/tree/master/examples
           ## for examples using the http-user-agent
     env:
@@ -112,7 +127,7 @@ jobs:
         if: "!contains(github.event.head_commit.message, '/nocache') && runner.os == 'Linux' "
         uses: actions/cache@v3
         with:
-          path: /home/runner/work/_temp/Library
+          path: /__w/_temp/Library
           key: ${{ env.cache-version }}-${{ runner.os }}-biocversion-${{ matrix.config.bioc }}-r-${{ matrix.config.r }}-${{ hashFiles('.github/depends.Rds') }}
           restore-keys: ${{ env.cache-version }}-${{ runner.os }}-biocversion-${{ matrix.config.bioc }}-r-${{ matrix.config.r }}-
 
@@ -200,7 +215,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Install pkgdown
-        if: github.ref == 'refs/heads/devel' && env.run_pkgdown == 'true' && runner.os == 'Linux'
+        if: github.ref == 'refs/heads/devel' && env.run_pkgdown == 'true' && runner.os == 'Linux' && matrix.config.bioc == '3.22'
         run: |
           remotes::install_cran("pkgdown")
         shell: Rscript {0}
@@ -250,17 +265,17 @@ jobs:
         shell: Rscript {0}
 
       - name: Test coverage
-        if: env.run_covr == 'true' && runner.os == 'Linux'
+        if: env.run_covr == 'true' && runner.os == 'Linux' && matrix.config.bioc == '3.22'
         run: |
           covr::codecov(coverage = covr::package_coverage(type = "all"))
         shell: Rscript {0}
 
       - name: Install package
-        if: github.ref == 'refs/heads/devel' && env.run_pkgdown == 'true' && runner.os == 'Linux'
+        if: github.ref == 'refs/heads/devel' && env.run_pkgdown == 'true' && runner.os == 'Linux' && matrix.config.bioc == '3.22'
         run: R CMD INSTALL .
 
       - name: Build pkgdown site
-        if: github.ref == 'refs/heads/devel' && env.run_pkgdown == 'true' && runner.os == 'Linux'
+        if: github.ref == 'refs/heads/devel' && env.run_pkgdown == 'true' && runner.os == 'Linux' && matrix.config.bioc == '3.22'
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
         ## Note that you need to run pkgdown::deploy_to_branch(new_process = FALSE)
@@ -269,12 +284,12 @@ jobs:
         ## makes the git history recognizable by pkgdown.
 
       - name: Install deploy dependencies
-        if: github.ref == 'refs/heads/devel' && env.run_pkgdown == 'true' && runner.os == 'Linux'
+        if: github.ref == 'refs/heads/devel' && env.run_pkgdown == 'true' && runner.os == 'Linux' && matrix.config.bioc == '3.22'
         run: |
           apt-get update && apt-get -y install rsync
 
       - name: Deploy pkgdown site to GitHub pages 🚀
-        if: github.ref == 'refs/heads/devel' && env.run_pkgdown == 'true' && runner.os == 'Linux'
+        if: github.ref == 'refs/heads/devel' && env.run_pkgdown == 'true' && runner.os == 'Linux' && matrix.config.bioc == '3.22'
         uses: JamesIves/github-pages-deploy-action@releases/v4
         with:
           clean: false
