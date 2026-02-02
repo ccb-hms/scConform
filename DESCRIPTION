@@ -5,7 +5,8 @@ Version: 0.99.1
 Authors@R: c(
                   person("Daniela", "Corbetta", 
                   email = "daniela.corbetta@unipd.it", 
-                  role = c("aut", "cre")),
+                  role = c("aut", "cre"), 
+                  comment=c(ORCID="0009-0008-5026-8271")),
                   person("Tram", "Nguyen", role = "ctb"),
                   person("Nitesh", "Turaga", role = "ctb"),
                   person("Ludwig", "Geistlinger", role = "ctb")
@@ -18,7 +19,7 @@ Description: Builds prediction interval for cell type annotation using conformal
     with the cell ontology.
 License: Artistic-2.0
 Depends:
-    R (>= 4.4.0)
+    R (>= 4.5.0)
 Suggests:
     knitr,
     Matrix,

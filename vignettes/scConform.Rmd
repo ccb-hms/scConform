@@ -3,7 +3,7 @@ title: "Conformal Prediction for cell type annotation"
 author:
     - name: Daniela Corbetta
       affiliation: Department of Statistical Sciences, University of Padova 
-      email: daniela.corbetta@phd.unipd.it
+      email: daniela.corbetta@unipd.it
 package: scConform
 output:
   BiocStyle::html_document:
@@ -37,8 +37,7 @@ dataset. However, relying solely on point predictions can be problematic when
 the corresponding estimated probability is low, leading to unreliable 
 classification. To address this issue, we propose to exploit conformal
 inference to return prediction sets that include multiple labels, with the set 
-size reflecting the confidence in the point prediction.
-
+size reflecting the confidence in the point prediction. 
 The package `scConform` implements two methods to achieve this:
 
 1. The first method uses split conformal inference (as a reference, 
@@ -59,17 +58,19 @@ The final output is a prediction set aligned with the
 cell ontology structure. Specifically, the prediction set will include all the
 children of an ancestor of the predicted class. The more unsure the point 
 prediction, the broader the classification. Also this method satisfies 
-$P(Y_{new} \in C(X_{new})) \geq 1-\alpha$.
+$P(Y_{new} \in C(X_{new})) \geq 1-\alpha$. More details are 
+available at [Corbetta et al., 2026+](https://arxiv.org/abs/2410.23786).
+
 
 # Installation
 
 To install it
-```{r, eval=FALSE}
-if (BiocManager::version() >= "3.20") {
+```{r inst, eval=FALSE}
+if (BiocManager::version() >= "3.23") {
     BiocManager::install("scConform")
 } else {
     spdl::info(
-        "'scConform' requires Bioconductor version 3.20 or later, ",
+        "'scConform' requires Bioconductor version 3.23 or later, ",
         "installing development version from Github"
     )
     devtools::install_github("ccb-hms/scConform")
@@ -220,9 +221,9 @@ table(spe_baysor$cell_type)
 ```
 
 Now randomly split the data into reference and query data. 
-```{r}
+```{r split}
 set.seed(1636)
-ref <- sample(seq_len(ncol(spe_baysor)), 600) 
+ref <- sample(seq_len(ncol(spe_baysor)), 600)
 
 spe_ref <- spe_baysor[, ref]
 spe_query <- spe_baysor[, -ref]
@@ -285,7 +286,6 @@ $C(X_{new})$ that satisfies
 
 \begin{equation}
 P(Y_{new} \in C(X_{new})) \geq 1-\alpha,
-(\#eq:cov)
 \end{equation}
 
 where $Y_{new}$ is the true label of the new cell and $\alpha$ is a user-chosen 
@@ -341,7 +341,7 @@ The parameter `onto` is not necessary with this method, but if the ontology is
 provided then it will be used by the function to retrieve the considered cell 
 types. Alternatively, we can explicitly provide the labels with the
 parameter `labels`. The parameter `alpha` indicates the allowed miscoverage
-percentage (see \@ref(eq:cov)). For example, if we set `alpha=0.1`, it means 
+percentage. For example, if we set `alpha=0.1`, it means 
 that at most 10% of the prediction sets we obtain will not include the true 
 label.
 
@@ -360,7 +360,7 @@ sets <- getPredictionSets(
 sets[1:6]
 ```
 Since in this example the cell labels are available, we can explicitly check 
-that \@ref(eq:cov) is satisfied by computing the 
+that the constraint on the miscoverage is satisfied by computing the 
 proportion of sets that include the true label. We set `alpha=0.1`, so we
 expect this proportion to be higher than 0.9.
 
@@ -431,8 +431,9 @@ find an ancestor of $\hat{y}(x)$ that has a score that is at least $\lambda$
 and include in the prediction sets all its children. Then we add to this 
 subgraph the other ones that contain $\hat{y}(x)$ for which the score is less 
 than $\lambda$. To choose $\lambda$, we follow eq. (4) in 
-[Angelopoulus et al., 2023](https://arxiv.org/abs/2208.02814) 
-(2022), considering the miscoverage as loss function.
+[Angelopoulus et al., 2023](https://arxiv.org/abs/2208.02814), considering the miscoverage as loss function.
+See [Corbetta et al., 2026+](https://arxiv.org/abs/2410.23786) for more details 
+on the algorithm and a discussion on the rationale of the method.
 
 ## Obtain hierarchical prediction sets
 
@@ -450,6 +451,7 @@ spe_query <- getPredictionSets(
     onto = opi2,
     alpha = 0.1,
     follow_ontology = TRUE,
+    method = "full",
     pr_name = "pred_set_hier",
     BPPARAM = MulticoreParam(workers = 2),
     simplify = FALSE
@@ -492,14 +494,14 @@ Let's now visualize the obtained prediction sets. The simplest way is to just
 ask to color the labels included in the prediction set. Let's compare 
 the prediction sets for one cell obtained with the two methods
 
-```{r}
+```{r plotres}
 plotResult(spe_query$pred_set[[75]], opi2,
     col_grad = "pink", attrs = attrs, add_scores = FALSE,
     title = "Conformal Prediction set"
 )
 ```
 
-```{r}
+```{r plotres2}
 plotResult(spe_query$pred_set_hier[[75]], opi2,
     col_grad = "pink", attrs = attrs, add_scores = FALSE,
     title = "Hierarchical prediction set"
@@ -511,7 +513,7 @@ gradient. The function will color the cells according to the gradient, with
 stronger colors corresponding to higher probabilities. If `add_scores=TRUE`,
 then the estimated probabilities will be added to the labels. 
 
-```{r}
+```{r plotres3}
 plotResult(spe_query$pred_set[[75]], opi2,
     probs = p_test[75, ],
     col_grad = c("lemonchiffon", "orange", "darkred"),
@@ -519,7 +521,7 @@ plotResult(spe_query$pred_set[[75]], opi2,
     title = "Conformal Prediction set"
 )
 ```
-```{r}
+```{r plotres4}
 plotResult(spe_query$pred_set_hier[[75]], opi2,
     probs = p_test[75, ],
     col_grad = c("lemonchiffon", "orange", "darkred"),

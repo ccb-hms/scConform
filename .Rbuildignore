@@ -3,4 +3,4 @@
 ^somegraphs\.R$
 ^\.github$
 ^old$
-
+pkgdown
