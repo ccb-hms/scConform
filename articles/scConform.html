@@ -75,7 +75,7 @@ annotation</h1>
 Corbetta</h4>
             <address class="author_afil">
       Department of Statistical Sciences, University of
-Padova<br><a class="author_email" href="mailto:#"></a><a href="mailto:daniela.corbetta@phd.unipd.it" class="email">daniela.corbetta@phd.unipd.it</a>
+Padova<br><a class="author_email" href="mailto:#"></a><a href="mailto:daniela.corbetta@unipd.it" class="email">daniela.corbetta@unipd.it</a>
       </address>
                   
       
@@ -102,9 +102,8 @@ can be problematic when the corresponding estimated probability is low,
 leading to unreliable classification. To address this issue, we propose
 to exploit conformal inference to return prediction sets that include
 multiple labels, with the set size reflecting the confidence in the
-point prediction.</p>
-<p>The package <code>scConform</code> implements two methods to achieve
-this:</p>
+point prediction. The package <code>scConform</code> implements two
+methods to achieve this:</p>
 <ol style="list-style-type: decimal">
 <li><p>The first method uses split conformal inference (as a reference,
 see for example section 1 of <a href="https://arxiv.org/abs/2107.07511" class="external-link">Angelopoulus and Bates,
@@ -127,7 +126,9 @@ ontology structure. Specifically, the prediction set will include all
 the children of an ancestor of the predicted class. The more unsure the
 point prediction, the broader the classification. Also this method
 satisfies
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>Y</mi><mrow><mi>n</mi><mi>e</mi><mi>w</mi></mrow></msub><mo>∈</mo><mi>C</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mi>e</mi><mi>w</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">)</mo><mo>≥</mo><mn>1</mn><mo>−</mo><mi>α</mi></mrow><annotation encoding="application/x-tex">P(Y_{new} \in C(X_{new})) \geq 1-\alpha</annotation></semantics></math>.</p></li>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>Y</mi><mrow><mi>n</mi><mi>e</mi><mi>w</mi></mrow></msub><mo>∈</mo><mi>C</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mi>e</mi><mi>w</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">)</mo><mo>≥</mo><mn>1</mn><mo>−</mo><mi>α</mi></mrow><annotation encoding="application/x-tex">P(Y_{new} \in C(X_{new})) \geq 1-\alpha</annotation></semantics></math>.
+More details are available at <a href="https://arxiv.org/abs/2410.23786" class="external-link">Corbetta et al.,
+2026+</a>.</p></li>
 </ol>
 </div>
 <div class="section level2">
@@ -135,11 +136,11 @@ satisfies
 </h2>
 <p>To install it</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/version.html" class="external-link">version</a></span><span class="op">(</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="st">"3.20"</span><span class="op">)</span> <span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/version.html" class="external-link">version</a></span><span class="op">(</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="st">"3.23"</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"scConform"</span><span class="op">)</span></span>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
 <span>    <span class="fu">spdl</span><span class="fu">::</span><span class="fu">info</span><span class="op">(</span></span>
-<span>        <span class="st">"'scConform' requires Bioconductor version 3.20 or later, "</span>,</span>
+<span>        <span class="st">"'scConform' requires Bioconductor version 3.23 or later, "</span>,</span>
 <span>        <span class="st">"installing development version from Github"</span></span>
 <span>    <span class="op">)</span></span>
 <span>    <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"ccb-hms/scConform"</span><span class="op">)</span></span>
@@ -306,7 +307,7 @@ cells and enterocytes</p>
 <p>Now randomly split the data into reference and query data.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1636</span><span class="op">)</span></span>
-<span><span class="va">ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">spe_baysor</span><span class="op">)</span><span class="op">)</span>, <span class="fl">600</span><span class="op">)</span> </span>
+<span><span class="va">ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">spe_baysor</span><span class="op">)</span><span class="op">)</span>, <span class="fl">600</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">spe_ref</span> <span class="op">&lt;-</span> <span class="va">spe_baysor</span><span class="op">[</span>, <span class="va">ref</span><span class="op">]</span></span>
 <span><span class="va">spe_query</span> <span class="op">&lt;-</span> <span class="va">spe_baysor</span><span class="op">[</span>, <span class="op">-</span><span class="va">ref</span><span class="op">]</span></span>
@@ -420,9 +421,8 @@ build, for a new non-annotated cell
 a prediction set
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mi>e</mi><mi>w</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">C(X_{new})</annotation></semantics></math>
 that satisfies</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>Y</mi><mrow><mi>n</mi><mi>e</mi><mi>w</mi></mrow></msub><mo>∈</mo><mi>C</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mi>e</mi><mi>w</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">)</mo><mo>≥</mo><mn>1</mn><mo>−</mo><mi>α</mi><mo>,</mo><mo stretchy="false" form="prefix">(</mo><mi>#</mi><mi>e</mi><mi>q</mi><mo>:</mo><mi>c</mi><mi>o</mi><mi>v</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\begin{equation}
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>Y</mi><mrow><mi>n</mi><mi>e</mi><mi>w</mi></mrow></msub><mo>∈</mo><mi>C</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mi>e</mi><mi>w</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">)</mo><mo>≥</mo><mn>1</mn><mo>−</mo><mi>α</mi><mo>,</mo></mrow><annotation encoding="application/x-tex">\begin{equation}
 P(Y_{new} \in C(X_{new})) \geq 1-\alpha,
-(\#eq:cov)
 \end{equation}</annotation></semantics></math></p>
 <p>where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Y</mi><mrow><mi>n</mi><mi>e</mi><mi>w</mi></mrow></msub><annotation encoding="application/x-tex">Y_{new}</annotation></semantics></math>
@@ -521,9 +521,9 @@ method, but if the ontology is provided then it will be used by the
 function to retrieve the considered cell types. Alternatively, we can
 explicitly provide the labels with the parameter <code>labels</code>.
 The parameter <code>alpha</code> indicates the allowed miscoverage
-percentage (see @ref(eq:cov)). For example, if we set
-<code>alpha=0.1</code>, it means that at most 10% of the prediction sets
-we obtain will not include the true label.</p>
+percentage. For example, if we set <code>alpha=0.1</code>, it means that
+at most 10% of the prediction sets we obtain will not include the true
+label.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">p_test</span><span class="op">)</span></span>
 <span><span class="va">sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPredictionSets.html">getPredictionSets</a></span><span class="op">(</span></span>
@@ -555,8 +555,8 @@ we obtain will not include the true label.</p>
 <span><span class="co">#&gt; [[6]]</span></span>
 <span><span class="co">#&gt; [1] "Smooth Muscle"</span></span></code></pre></div>
 <p>Since in this example the cell labels are available, we can
-explicitly check that @ref(eq:cov) is satisfied by computing the
-proportion of sets that include the true label. We set
+explicitly check that the constraint on the miscoverage is satisfied by
+computing the proportion of sets that include the true label. We set
 <code>alpha=0.1</code>, so we expect this proportion to be higher than
 0.9.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
@@ -684,8 +684,10 @@ for which the score is less than
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math>.
 To choose
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math>,
-we follow eq. (4) in <a href="https://arxiv.org/abs/2208.02814" class="external-link">Angelopoulus et al., 2023</a>
-(2022), considering the miscoverage as loss function.</p>
+we follow eq. (4) in <a href="https://arxiv.org/abs/2208.02814" class="external-link">Angelopoulus et al., 2023</a>,
+considering the miscoverage as loss function. See <a href="https://arxiv.org/abs/2410.23786" class="external-link">Corbetta et al., 2026+</a> for
+more details on the algorithm and a discussion on the rationale of the
+method.</p>
 </div>
 <div class="section level3">
 <h3 id="obtain-hierarchical-prediction-sets">Obtain hierarchical prediction sets<a class="anchor" aria-label="anchor" href="#obtain-hierarchical-prediction-sets"></a>
@@ -704,6 +706,7 @@ the prediction sets in the colData.</p>
 <span>    onto <span class="op">=</span> <span class="va">opi2</span>,</span>
 <span>    alpha <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>    follow_ontology <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    method <span class="op">=</span> <span class="st">"full"</span>,</span>
 <span>    pr_name <span class="op">=</span> <span class="st">"pred_set_hier"</span>,</span>
 <span>    BPPARAM <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/MulticoreParam-class.html" class="external-link">MulticoreParam</a></span><span class="op">(</span>workers <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>    simplify <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -770,13 +773,13 @@ methods</p>
 <span>    col_grad <span class="op">=</span> <span class="st">"pink"</span>, attrs <span class="op">=</span> <span class="va">attrs</span>, add_scores <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>    title <span class="op">=</span> <span class="st">"Conformal Prediction set"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="scConform_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="scConform_files/figure-html/plotres-1.png" class="r-plt" alt="" width="700"></p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotResult.html">plotResult</a></span><span class="op">(</span><span class="va">spe_query</span><span class="op">$</span><span class="va">pred_set_hier</span><span class="op">[[</span><span class="fl">75</span><span class="op">]</span><span class="op">]</span>, <span class="va">opi2</span>,</span>
 <span>    col_grad <span class="op">=</span> <span class="st">"pink"</span>, attrs <span class="op">=</span> <span class="va">attrs</span>, add_scores <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>    title <span class="op">=</span> <span class="st">"Hierarchical prediction set"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="scConform_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="scConform_files/figure-html/plotres2-1.png" class="r-plt" alt="" width="700"></p>
 <p>We can now instead give as input also the estimated probabilities and
 a gradient. The function will color the cells according to the gradient,
 with stronger colors corresponding to higher probabilities. If
@@ -789,7 +792,7 @@ added to the labels.</p>
 <span>    attrs <span class="op">=</span> <span class="va">attrs</span>, add_scores <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    title <span class="op">=</span> <span class="st">"Conformal Prediction set"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="scConform_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="scConform_files/figure-html/plotres3-1.png" class="r-plt" alt="" width="700"></p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotResult.html">plotResult</a></span><span class="op">(</span><span class="va">spe_query</span><span class="op">$</span><span class="va">pred_set_hier</span><span class="op">[[</span><span class="fl">75</span><span class="op">]</span><span class="op">]</span>, <span class="va">opi2</span>,</span>
 <span>    probs <span class="op">=</span> <span class="va">p_test</span><span class="op">[</span><span class="fl">75</span>, <span class="op">]</span>,</span>
@@ -797,7 +800,7 @@ added to the labels.</p>
 <span>    attrs <span class="op">=</span> <span class="va">attrs</span>, add_scores <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    title <span class="op">=</span> <span class="st">"Hierarchical Prediction set"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="scConform_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="scConform_files/figure-html/plotres4-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 <div class="section level2">
 <h2 class="unnumbered" id="r-session-info">R.session Info<a class="anchor" aria-label="anchor" href="#r-session-info"></a>
@@ -842,16 +845,16 @@ other attached packages:
 loaded via a namespace (and not attached):
   [1] jsonlite_2.0.0       magrittr_2.0.4       magick_2.9.0        
   [4] rmarkdown_2.30       fs_1.6.6             ragg_1.5.0          
-  [7] vctrs_0.7.0          memoise_2.0.1        ellmer_0.4.0        
+  [7] vctrs_0.7.1          memoise_2.0.1        ellmer_0.4.0        
  [10] RCurl_1.98-1.17      htmltools_0.5.9      S4Arrays_1.10.1     
  [13] AnnotationHub_4.0.0  curl_7.0.0           BiocNeighbors_2.4.0 
  [16] Rhdf5lib_1.32.0      SparseArray_1.10.8   rhdf5_2.54.1        
- [19] sass_0.4.10          bslib_0.9.0          htmlwidgets_1.6.4   
+ [19] sass_0.4.10          bslib_0.10.0         htmlwidgets_1.6.4   
  [22] desc_1.4.3           httr2_1.2.2          cachem_1.1.0        
  [25] mime_0.13            lifecycle_1.0.5      pkgconfig_2.0.3     
  [28] rsvd_1.0.5           Matrix_1.7-4         R6_2.6.1            
  [31] fastmap_1.2.0        shiny_1.12.1         digest_0.6.39       
- [34] AnnotationDbi_1.72.0 dqrng_0.4.1          irlba_2.3.5.1       
+ [34] AnnotationDbi_1.72.0 dqrng_0.4.1          irlba_2.3.7         
  [37] ExperimentHub_3.0.0  textshaping_1.0.4    RSQLite_2.4.5       
  [40] beachmat_2.26.0      filelock_1.0.3       httr_1.4.7          
  [43] abind_1.4-8          compiler_4.5.2       withr_3.0.2         
