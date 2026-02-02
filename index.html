@@ -76,7 +76,15 @@
 <h2 id="install-from-github">Install from github<a class="anchor" aria-label="anchor" href="#install-from-github"></a>
 </h2>
 <p>The package can then be installed via:</p>
-<pre><code><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"ccb-hms/scConform"</span><span class="op">)</span></span></code></pre>
+<pre><code><span><span class="kw">if</span> <span class="op">(</span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/version.html" class="external-link">version</a></span><span class="op">(</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="st">"3.23"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"scConform"</span><span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="fu">spdl</span><span class="fu">::</span><span class="fu">info</span><span class="op">(</span></span>
+<span>        <span class="st">"'scConform' requires Bioconductor version 3.23 or later, "</span>,</span>
+<span>        <span class="st">"installing development version from Github"</span></span>
+<span>    <span class="op">)</span></span>
+<span>    <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"ccb-hms/scConform"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre>
 <p>Load the library.</p>
 <pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ccb-hms/scConform" class="external-link">scConform</a></span><span class="op">)</span></span></code></pre>
 </div>
