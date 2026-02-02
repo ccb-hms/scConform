@@ -4,7 +4,15 @@
 The package can then be installed via:
 
 ```
-devtools::install_github("ccb-hms/scConform")
+if (BiocManager::version() >= "3.23") {
+    BiocManager::install("scConform")
+} else {
+    spdl::info(
+        "'scConform' requires Bioconductor version 3.23 or later, ",
+        "installing development version from Github"
+    )
+    devtools::install_github("ccb-hms/scConform")
+}
 ```
 
 Load the library.

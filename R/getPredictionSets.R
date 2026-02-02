@@ -168,7 +168,11 @@
 #' @export
 
 getPredictionSets <- function(
-        x_query, x_cal, y_cal, onto = NULL, alpha = 0.1,
+        x_query,
+        x_cal,
+        y_cal,
+        onto = NULL,
+        alpha = 0.1,
         lambdas = seq(0.001, 0.999, length.out = 100),
         follow_ontology = TRUE,
         resample = FALSE,
@@ -214,19 +218,18 @@ getPredictionSets <- function(
 
     # Validate method
     if (is.character(method)) {
-      allowed_methods <- c("full", "step", "rank")
-      if (length(method) != 1 || !method %in% allowed_methods) {
-        stop(
-          "If 'method' is a character, it must be one of: ",
-          paste(allowed_methods, collapse = ", ")
-        )
-      }
+        allowed_methods <- c("full", "step", "rank")
+        if (length(method) != 1 || !method %in% allowed_methods) {
+            stop(
+                "If 'method' is a character, it must be one of: ",
+                paste(allowed_methods, collapse = ", ")
+            )
+        }
     } else if (is.function(method)) {
-      # ok: user-supplied prediction-set constructor
+        # ok: user-supplied prediction-set constructor
     } else {
-      stop("'method' must be either a character string or a function")
+        stop("'method' must be either a character string or a function")
     }
-
 
 
     ## If labels parameter is NULL, retrieve labels from the ontology

@@ -40,26 +40,23 @@
 # Angelopoulus (2023), Conformal Risk Control. Finally, builds prediction sets
 # for p_test based on the selected lambda value.
 
-.getHierarchicalPredSets <- function(
-        p_cal, p_test, y_cal, onto, alpha,
-        lambdas, BPPARAM,
-        method = "full") {
-
+.getHierarchicalPredSets <- function(p_cal, p_test, y_cal, onto, alpha,
+                                     lambdas, BPPARAM,
+                                     method = "full") {
     # method <- match.arg(method)
     y_cal <- as.character(y_cal)
 
     # Select sets construction algorithm
     if (is.character(method)) {
-      pred_fun <- switch(
-        method,
-        full   = .predSets,
-        step   = .predSetsStep,
-        rank   = .predSetsRank
-      )
+        pred_fun <- switch(method,
+            full   = .predSets,
+            step   = .predSetsStep,
+            rank   = .predSetsRank
+        )
     } else if (is.function(method)) {
-      pred_fun <- method
+        pred_fun <- method
     } else {
-      stop("Invalid 'method' argument")
+        stop("Invalid 'method' argument")
     }
 
 
@@ -93,7 +90,7 @@
 
     # Get prediction sets for test data
     sets_test <- lapply(seq_len(nrow(p_test)), function(i) {
-      pred_fun(lambda = lhat, pred = p_test[i, ], onto = onto)
+        pred_fun(lambda = lhat, pred = p_test[i, ], onto = onto)
     })
 
     return(sets_test)
@@ -171,108 +168,110 @@
     return(Reduce(union, selected))
 }
 
-# Reduced (simple) hierarchical prediction sets (reduced version, no union with L(v))
+# Reduced (simple) hierarchical prediction sets (reduced version, no union
+# with L(v))
 .predSetsSimple <- function(lambda, pred, onto) {
-  # Predicted class and its ancestors
-  pred_class <- names(pred)[which.max(pred)]
-  anc <- .ancestors(node = pred_class, onto = onto, include_self = TRUE)
+    # Predicted class and its ancestors
+    pred_class <- names(pred)[which.max(pred)]
+    anc <- .ancestors(node = pred_class, onto = onto, include_self = TRUE)
 
-  # Compute scores g(a, x)
-  s <- vapply(as.character(anc), function(i) {
-    .scores(
-      pred = pred,
-      int_node = i,
-      onto = onto
+    # Compute scores g(a, x)
+    s <- vapply(as.character(anc), function(i) {
+        .scores(
+            pred = pred,
+            int_node = i,
+            onto = onto
+        )
+    }, numeric(1))
+    names(s) <- anc
+
+    # Thresholded ancestors (exclude NA scores)
+    selected <- lapply(
+        anc[!is.na(s) & round(s, 10) <= lambda],
+        function(x) {
+            .children(node = x, onto = onto)
+        }
     )
-  }, numeric(1))
-  names(s) <- anc
 
-  # Thresholded ancestors (exclude NA scores)
-  selected <- lapply(
-    anc[!is.na(s) & round(s, 10) <= lambda],
-    function(x) {
-      .children(node = x, onto = onto)
-    }
-  )
+    # If empty, fall back to the predicted class
+    # if (length(selected) == 0) {
+    #   return(.children(node = pred_class, onto = onto))
+    # }
 
-  # If empty, fall back to the predicted class
-  # if (length(selected) == 0) {
-  #   return(.children(node = pred_class, onto = onto))
-  # }
-
-  Reduce(union, selected)
+    Reduce(union, selected)
 }
 
 # Nested sets by number of steps up the DAG (k = lambda)
 .predSetsStep <- function(lambda, pred, onto) {
-  pred_class <- names(pred)[which.max(pred)]
-  k <- as.integer(lambda)
+    pred_class <- names(pred)[which.max(pred)]
+    k <- as.integer(lambda)
 
-  if (is.na(k) || k < 0) {
-    stop("For method = 'step', lambda must be a non-negative integer.")
-  }
+    if (is.na(k) || k < 0) {
+        stop("For method = 'step', lambda must be a non-negative integer.")
+    }
 
-  # All ancestors (including itself)
-  anc <- .ancestors(node = pred_class, onto = onto, include_self = TRUE)
+    # All ancestors (including itself)
+    anc <- .ancestors(node = pred_class, onto = onto, include_self = TRUE)
 
-  # Distance from pred_class up to each ancestor (mode = 'in' goes upward)
-  d <- distances(onto, v = pred_class, to = anc, mode = "in")
-  d <- as.numeric(d[1, ])
-  names(d) <- anc
+    # Distance from pred_class up to each ancestor (mode = 'in' goes upward)
+    d <- distances(onto, v = pred_class, to = anc, mode = "in")
+    d <- as.numeric(d[1, ])
+    names(d) <- anc
 
-  anc_keep <- names(d)[is.finite(d) & d <= k]
+    anc_keep <- names(d)[is.finite(d) & d <= k]
 
-  # Union of leaves of kept ancestors
-  selected <- lapply(anc_keep, function(a) .children(node = a, onto = onto))
-  if (length(selected) == 0) return(character(0))
-  Reduce(union, selected)
+    # Union of leaves of kept ancestors
+    selected <- lapply(anc_keep, function(a) .children(node = a, onto = onto))
+    if (length(selected) == 0) {
+        return(character(0))
+    }
+    Reduce(union, selected)
 }
 
 # Prediction sets by probability ranking + LCA
 .predSetsRank <- function(lambda, pred, onto) {
-  # lambda is a cumulative probability threshold in [0, 1]
-  if (is.na(lambda) || lambda < 0 || lambda > 1) {
-    stop("For method = 'rank', lambda must be in [0, 1].")
-  }
+    # lambda is a cumulative probability threshold in [0, 1]
+    if (is.na(lambda) || lambda < 0 || lambda > 1) {
+        stop("For method = 'rank', lambda must be in [0, 1].")
+    }
 
-  # Ontology leaves
-  leaves <- V(onto)$name[degree(onto, mode = "out") == 0]
+    # Ontology leaves
+    leaves <- V(onto)$name[degree(onto, mode = "out") == 0]
 
-  # Keep only leaves present in prediction vector
-  leaves <- intersect(leaves, names(pred))
-  if (length(leaves) == 0) {
-    stop("No ontology leaves are present among prediction vector names.")
-  }
+    # Keep only leaves present in prediction vector
+    leaves <- intersect(leaves, names(pred))
+    if (length(leaves) == 0) {
+        stop("No ontology leaves are present among prediction vector names.")
+    }
 
-  # Probabilities for leaves
-  p <- pred[leaves]
-  p[is.na(p)] <- 0
+    # Probabilities for leaves
+    p <- pred[leaves]
+    p[is.na(p)] <- 0
 
-  # Rank leaves by decreasing probability
-  ord <- order(p, decreasing = TRUE)
-  leaves_ord <- leaves[ord]
-  p_ord <- p[ord]
+    # Rank leaves by decreasing probability
+    ord <- order(p, decreasing = TRUE)
+    leaves_ord <- leaves[ord]
+    p_ord <- p[ord]
 
-  # Select leaves until cumulative probability exceeds lambda
-  cumprob <- cumsum(p_ord)
-  m <- which(cumprob >= lambda)[1]
+    # Select leaves until cumulative probability exceeds lambda
+    cumprob <- cumsum(p_ord)
+    m <- which(cumprob >= lambda)[1]
 
-  if (is.na(m)) {
-    m <- length(leaves_ord)
-  }
-  if (m < 1) {
-    m <- 1
-  }
+    if (is.na(m)) {
+        m <- length(leaves_ord)
+    }
+    if (m < 1) {
+        m <- 1
+    }
 
-  selected_leaves <- leaves_ord[seq_len(m)]
+    selected_leaves <- leaves_ord[seq_len(m)]
 
-  # Lowest common ancestor of selected leaves
-  lca <- getCommonAncestor(selected_leaves, onto)
+    # Lowest common ancestor of selected leaves
+    lca <- getCommonAncestor(selected_leaves, onto)
 
-  # Return all leaves under the LCA
-  .children(node = lca, onto = onto)
+    # Return all leaves under the LCA
+    .children(node = lca, onto = onto)
 }
-
 
 
 ###############################################################################
@@ -301,14 +300,14 @@
     idx1 <- idx2 <- NULL
     for (i in labels) {
         category <- which(y_cal == i)
-        if (!is.na(des_freq1[i]) & length(category)>0) {
+        if (!is.na(des_freq1[i]) & length(category) > 0) {
             idx_category1 <- sample(category,
                 size = des_freq1[i],
                 replace = TRUE
             )
             idx1 <- c(idx1, idx_category1)
         }
-        if (!is.na(des_freq2[i]) & length(category)>0) {
+        if (!is.na(des_freq2[i]) & length(category) > 0) {
             idx_category2 <- sample(category,
                 size = des_freq2[i],
                 replace = TRUE
