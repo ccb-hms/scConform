@@ -122,7 +122,11 @@
 #' nested prediction-set constructions that incorporate the ontology structure
 #' in different ways. All methods are calibrated using the same conformal
 #' risk-control procedure to select the threshold parameter \eqn{\lambda}.}
-#' @references For an introduction to conformal prediction, see
+#' @references For more details
+#' on the algorithm and a discussion on the rationale of the method,
+#' see Corbetta et al., "Conformal inference for cell type annotation with
+#' graph-structured constraints.", arXiv preprint 	arXiv:2410.23786 (2025).
+#' For an introduction to conformal prediction, see
 #' Angelopoulos, Anastasios N., and Stephen Bates. "A gentle introduction to
 #' conformal prediction and distribution-free uncertainty quantification."
 #' arXiv preprint arXiv:2107.07511 (2021).
