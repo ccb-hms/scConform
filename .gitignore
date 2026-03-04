@@ -3,4 +3,5 @@
 .RData
 .Ruserdata
 pkgdown/
-
+.DS_Store
+**/.DS_Store
