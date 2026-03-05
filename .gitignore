@@ -5,3 +5,5 @@
 pkgdown/
 .DS_Store
 **/.DS_Store
+*.Rproj
+.Rproj.user/
