@@ -7,3 +7,4 @@ pkgdown/
 **/.DS_Store
 *.Rproj
 .Rproj.user/
+tests/testthat/Rplots.pdf

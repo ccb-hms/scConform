@@ -1,12 +1,14 @@
 #' @title Return the common ancestor of the labels in the prediction set
-#' @description This function takes as input a prediction set and an
-#' ontology and returns the common ancestor of the labels in the prediction set.
-#' It is useful when using hierarchical
-#'
-#' @param pred_set character vector containing the labels in the prediction set
-#' @param onto ontology as an igraph object
-#' @return the common ancestor of the labels in \code{pred_set}, according to
-#' the ontology \code{onto}
+#' @description Given a prediction set and an ontology represented as a directed
+#' graph, this function returns the most specific common ancestor of the labels
+#' in the prediction set. It is mainly intended for hierarchical conformal
+#' prediction, where a set of predicted labels can be summarized by a single
+#' ontology term representing their common ancestor.
+#' @param pred_set character vector of labels included in the prediction set.
+#' These labels should correspond to node names in `onto`.
+#' @param onto an `igraph` object representing the ontology.
+#' @return A character string corresponding to the most specific common ancestor
+#' of the labels in `pred_set` according to the ontology `onto`.
 #' @examples
 #' library(igraph)
 #' # Let's build a random ontology

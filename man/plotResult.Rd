@@ -19,25 +19,30 @@ plotResult(
 \arguments{
 \item{pred_set}{character vector containing the labels in the prediction set}
 
-\item{onto}{ontology as an igraph}
+\item{onto}{an \code{igraph} object representing the ontology}
 
-\item{probs}{estimated probabilities for the classes}
+\item{probs}{numeric vector of estimated probabilities for the classes. The
+names of \code{probs} should correspond to node names in \code{onto}}
 
-\item{col_grad}{color to use to highlight the classes}
+\item{col_grad}{character vector of colors used to highlight the classes. If
+\code{probs} is provided, this should contain a color gradient; otherwise,
+a single color can be supplied}
 
-\item{attrs}{other grtaphical attributes}
+\item{attrs}{attrs list of additional graphical attributes passed to
+\code{plot()}}
 
-\item{k}{number of decimal digits to consider in \code{probs}}
+\item{k}{integer number of decimal digits to consider in \code{probs}}
 
 \item{title}{title of the plot}
 
-\item{add_scores}{boolean. If \code{TRUE}, estimated probabilities are
+\item{add_scores}{Logical. If \code{TRUE}, estimated probabilities are
 added to the name of the classes}
 
-\item{...}{general commands to be sent to plot}
+\item{...}{additional graphical parameters passed to \code{plot()}}
 }
 \value{
-a plot of the ontology with the considered classes colored
+A plot of the ontology with the labels in the prediction set
+highlighted.
 }
 \description{
 This function takes as input a prediction set and an

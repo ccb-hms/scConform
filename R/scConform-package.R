@@ -6,15 +6,15 @@
 #' starting from model-based estimated class probabilities.
 #'
 #' The main entry point of the package is the function
-#' \code{\link{getPredictionSets}}, which builds prediction sets for
+#' [getPredictionSets()], which builds prediction sets for
 #' query cells using a calibration dataset and a user-specified
 #' miscoverage level \eqn{\alpha}.
 #'
 #' Two types of prediction sets are supported:
 #' \itemize{
-#'   \item \emph{Classical conformal prediction sets}, which return subsets
+#'   \item *Classical conformal prediction sets*, which return subsets
 #'   of cell-type labels without structural constraints;
-#'   \item \emph{Hierarchical conformal prediction sets}, which incorporate
+#'   \item *Hierarchical conformal prediction sets*, which incorporate
 #'   prior knowledge encoded in a cell ontology and return prediction sets
 #'   that are consistent with the ontology structure.
 #' }
@@ -25,19 +25,19 @@
 #' ontology-aware prediction sets.
 #'
 #' The package is designed to work seamlessly with
-#' \code{SingleCellExperiment} and \code{SpatialExperiment} objects, but
+#' `SingleCellExperiment` and `SpatialExperiment` objects, but
 #' also supports matrix-based inputs of predicted class probabilities.
 #'
 #' The methodological framework implemented in \pkg{scConform} is described
 #' in Corbetta et al. (2025).
 #'
-#' To get started, see the help page of \code{\link{getPredictionSets}} and
+#' To get started, see the help page of [getPredictionSets()] and
 #' the package vignette for a complete workflow.
 #'
 #' @references
 #' Corbetta, D., Geistlinger L., Finos, L., and Risso, D. (2025).
-#' \emph{Conformal inference for cell type annotation with graph-structured
-#' constraints}. arXiv preprint arXiv:2410.23786.
+#' *Conformal inference for cell type annotation with graph-structured
+#' constraints*. arXiv preprint arXiv:2410.23786.
 #'
 #' @keywords internal
 "_PACKAGE"

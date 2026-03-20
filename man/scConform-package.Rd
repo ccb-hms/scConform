@@ -13,17 +13,17 @@ starting from model-based estimated class probabilities.
 }
 \details{
 The main entry point of the package is the function
-\code{\link{getPredictionSets}}, which builds prediction sets for
+\code{\link[=getPredictionSets]{getPredictionSets()}}, which builds prediction sets for
 query cells using a calibration dataset and a user-specified
 miscoverage level \eqn{\alpha}.
 
 Two types of prediction sets are supported:
 \itemize{
-  \item \emph{Classical conformal prediction sets}, which return subsets
-  of cell-type labels without structural constraints;
-  \item \emph{Hierarchical conformal prediction sets}, which incorporate
-  prior knowledge encoded in a cell ontology and return prediction sets
-  that are consistent with the ontology structure.
+\item \emph{Classical conformal prediction sets}, which return subsets
+of cell-type labels without structural constraints;
+\item \emph{Hierarchical conformal prediction sets}, which incorporate
+prior knowledge encoded in a cell ontology and return prediction sets
+that are consistent with the ontology structure.
 }
 
 When hierarchical prediction is enabled, \pkg{scConform} uses a conformal
@@ -38,7 +38,7 @@ also supports matrix-based inputs of predicted class probabilities.
 The methodological framework implemented in \pkg{scConform} is described
 in Corbetta et al. (2025).
 
-To get started, see the help page of \code{\link{getPredictionSets}} and
+To get started, see the help page of \code{\link[=getPredictionSets]{getPredictionSets()}} and
 the package vignette for a complete workflow.
 }
 \references{
