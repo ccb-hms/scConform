@@ -19,7 +19,7 @@ Description: Builds prediction interval for cell type annotation using conformal
     with the cell ontology.
 License: Artistic-2.0
 Depends:
-    R (>= 4.5.0)
+    R (>= 4.6.0)
 Suggests:
     knitr,
     Matrix,
@@ -41,8 +41,11 @@ Imports:
     Rgraphviz
 VignetteBuilder: knitr
 RoxygenNote: 7.3.3
+Roxygen: list(markdown = TRUE)
 Encoding: UTF-8
 biocViews: 
+    Software,
+    Classification,
     SingleCell,
     Annotation
 URL: https://github.com/ccb-hms/scConform

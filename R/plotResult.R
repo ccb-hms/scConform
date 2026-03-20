@@ -3,16 +3,21 @@
 #' ontology and plots the ontology, highlighting the labels included in the set.
 #'
 #' @param pred_set character vector containing the labels in the prediction set
-#' @param onto ontology as an igraph
-#' @param probs estimated probabilities for the classes
-#' @param col_grad color to use to highlight the classes
-#' @param attrs other grtaphical attributes
-#' @param k number of decimal digits to consider in \code{probs}
+#' @param onto an `igraph` object representing the ontology
+#' @param probs numeric vector of estimated probabilities for the classes. The
+#'   names of `probs` should correspond to node names in `onto`
+#' @param col_grad character vector of colors used to highlight the classes. If
+#'   `probs` is provided, this should contain a color gradient; otherwise,
+#'   a single color can be supplied
+#' @param attrs attrs list of additional graphical attributes passed to
+#' `plot()`
+#' @param k integer number of decimal digits to consider in `probs`
 #' @param title title of the plot
-#' @param add_scores boolean. If \code{TRUE}, estimated probabilities are
+#' @param add_scores Logical. If `TRUE`, estimated probabilities are
 #' added to the name of the classes
-#' @param ... general commands to be sent to plot
-#' @return a plot of the ontology with the considered classes colored
+#' @param ... additional graphical parameters passed to `plot()`
+#' @return A plot of the ontology with the labels in the prediction set
+#'   highlighted.
 #' @examples
 #' library(igraph)
 #' # Let's build a random ontology
@@ -28,55 +33,58 @@
 #' )
 #'
 #' @importFrom grDevices colorRampPalette
-#' @importFrom igraph as_graphnel
-#' @import Rgraphviz
+#' @importFrom igraph as_graphnel V
+#' @importFrom Rgraphviz plot
 #' @export
 #'
 
 plotResult <- function(
-        pred_set,
-        onto,
-        probs = NULL,
-        col_grad = c("lemonchiffon", "orange", "darkred"),
-        attrs = NULL,
-        k = 4,
-        title = NULL,
-        add_scores = TRUE, ...) {
-    ## Function works with graphnel
-    graph <- as_graphnel(onto)
-    vec_col <- NULL
-    if (!is.null(probs)) {
-        p <- round(probs, k) * 10^k
-        colfunc <- colorRampPalette(col_grad)
-        for (i in pred_set) {
-            vec_col[i] <- ifelse(
-                p[i] == 0,
-                colfunc(10^k)[1],
-                colfunc(10^k)[p[i]]
-            )
-        }
-    } else {
-        for (i in pred_set) {
-            vec_col[i] <- col_grad
-        }
-    }
-    nAttrs <- list()
-    nAttrs$fillcolor <- vec_col
+    pred_set,
+    onto,
+    probs = NULL,
+    col_grad = c("lemonchiffon", "orange", "darkred"),
+    attrs = NULL,
+    k = 4,
+    title = NULL,
+    add_scores = TRUE,
+    ...) {
+  if (add_scores && is.null(probs)) {
+    stop("'probs' must be provided when 'add_scores = TRUE'.")
+  }
 
-    # Add scores if requested
-    if (add_scores) {
-        # Need igraph for .scores function
-        scores <- round(vapply(
-            V(onto)$name,
-            function(x) .scores(probs, x, onto),
-            numeric(1)
-        ), 3)
-        labels <- NULL
-        for (i in seq_along(V(onto)$name)) {
-            labels[i] <- paste(V(onto)$name[i], scores[i], sep = ", ")
-        }
-        names(labels) <- names(scores)
-        nAttrs$label <- labels
-    }
-    plot(graph, attrs = attrs, nodeAttrs = nAttrs, main = title)
+  graph <- as_graphnel(onto)
+
+  if (!is.null(probs)) {
+    p <- round(probs, k) * 10^k
+    colfunc <- colorRampPalette(col_grad)
+    palette_cols <- colfunc(10^k)
+
+    vec_col <- vapply(pred_set, function(i) {
+      if (p[i] == 0) {
+        palette_cols[1]
+      } else {
+        palette_cols[p[i]]
+      }
+    }, character(1))
+  } else {
+      vec_col <- rep(col_grad[1], length(pred_set))
+  }
+
+  names(vec_col) <- pred_set
+  nAttrs <- list(fillcolor = vec_col)
+
+  if (add_scores) {
+    node_names <- V(onto)$name
+    scores <- round(vapply(
+      node_names,
+      function(x) .scores(probs, x, onto),
+      numeric(1)
+    ), 3)
+
+    labels <- paste(node_names, scores, sep = ", ")
+    names(labels) <- node_names
+    nAttrs$label <- labels
+  }
+
+  plot(graph, attrs = attrs, nodeAttrs = nAttrs, main = title, ...)
 }

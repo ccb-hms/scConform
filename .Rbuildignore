@@ -4,3 +4,4 @@
 ^\.github$
 ^old$
 pkgdown
+^tests/testthat/Rplots\.pdf$

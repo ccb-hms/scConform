@@ -285,48 +285,50 @@
 
 .resampleTwo <- function(p_cal, p_test, y_cal, labels) {
     s <- sample(seq_len(nrow(p_test)), round(nrow(p_test) / 2))
-    test1 <- p_test[s, ]
-    test2 <- p_test[-s, ]
+    test1 <- p_test[s, , drop = FALSE]
+    test2 <- p_test[-s, , drop = FALSE]
 
     # Compute predicted class
     pr_class1 <- apply(test1, 1, function(row) colnames(test1)[which.max(row)])
     pr_class2 <- apply(test2, 1, function(row) colnames(test2)[which.max(row)])
     test_freq1 <- prop.table(table(pr_class1))
     test_freq2 <- prop.table(table(pr_class2))
+
     # Transform to absolute frequencies
     des_freq1 <- round(test_freq1 * length(y_cal))
     des_freq2 <- round(test_freq2 * length(y_cal))
 
-    idx1 <- idx2 <- NULL
-    for (i in labels) {
+    idx1 <- unlist(lapply(labels, function(i) {
         category <- which(y_cal == i)
-        if (!is.na(des_freq1[i]) & length(category) > 0) {
-            idx_category1 <- sample(category,
-                size = des_freq1[i],
-                replace = TRUE
-            )
-            idx1 <- c(idx1, idx_category1)
-        }
-        if (!is.na(des_freq2[i]) & length(category) > 0) {
-            idx_category2 <- sample(category,
-                size = des_freq2[i],
-                replace = TRUE
-            )
-            idx2 <- c(idx2, idx_category2)
-        }
-    }
+        n_i <- des_freq1[i]
 
-    return(
-        list(
-            p_cal1 = p_cal[idx1, ],
-            p_cal2 = p_cal[idx2, ],
-            p_test1 = test1,
-            p_test2 = test2,
-            y_cal1 = y_cal[idx1],
-            y_cal2 = y_cal[idx2],
-            idx = c(s, setdiff(seq_len(nrow(p_test)), s))
-        ) # index in the original data
-    )
+        if (is.na(n_i) || length(category) == 0) {
+            return(integer(0))
+        }
+
+        sample(category, size = n_i, replace = TRUE)
+    }), use.names = FALSE)
+
+    idx2 <- unlist(lapply(labels, function(i) {
+        category <- which(y_cal == i)
+        n_i <- des_freq2[i]
+
+        if (is.na(n_i) || length(category) == 0) {
+            return(integer(0))
+        }
+
+        sample(category, size = n_i, replace = TRUE)
+    }), use.names = FALSE)
+
+    list(
+        p_cal1 = p_cal[idx1, , drop = FALSE],
+        p_cal2 = p_cal[idx2, , drop = FALSE],
+        p_test1 = test1,
+        p_test2 = test2,
+        y_cal1 = y_cal[idx1],
+        y_cal2 = y_cal[idx2],
+        idx = c(s, setdiff(seq_len(nrow(p_test)), s))
+    ) # index in the original data
 }
 
 ###############################################################################

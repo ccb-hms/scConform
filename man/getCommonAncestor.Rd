@@ -7,18 +7,21 @@
 getCommonAncestor(pred_set, onto)
 }
 \arguments{
-\item{pred_set}{character vector containing the labels in the prediction set}
+\item{pred_set}{character vector of labels included in the prediction set.
+These labels should correspond to node names in \code{onto}.}
 
-\item{onto}{ontology as an igraph object}
+\item{onto}{an \code{igraph} object representing the ontology.}
 }
 \value{
-the common ancestor of the labels in \code{pred_set}, according to
-the ontology \code{onto}
+A character string corresponding to the most specific common ancestor
+of the labels in \code{pred_set} according to the ontology \code{onto}.
 }
 \description{
-This function takes as input a prediction set and an
-ontology and returns the common ancestor of the labels in the prediction set.
-It is useful when using hierarchical
+Given a prediction set and an ontology represented as a directed
+graph, this function returns the most specific common ancestor of the labels
+in the prediction set. It is mainly intended for hierarchical conformal
+prediction, where a set of predicted labels can be summarized by a single
+ontology term representing their common ancestor.
 }
 \examples{
 library(igraph)

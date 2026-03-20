@@ -9,6 +9,7 @@ output:
   BiocStyle::html_document:
     toc: true
     toc_float: true
+bibliography: REFERENCES.bib
 vignette: >
   %\VignetteIndexEntry{Conformal Prediction for cell type annotation}
   %\VignetteEngine{knitr::rmarkdown}
@@ -41,8 +42,7 @@ size reflecting the confidence in the point prediction.
 The package `scConform` implements two methods to achieve this:
 
 1. The first method uses split conformal inference (as a reference, 
-see for example section 1 of 
-[Angelopoulus and Bates, 2022](https://arxiv.org/abs/2107.07511)). 
+see for example section 1 of @angelopoulos2022gentle 
 The output is a 
 prediction set, $C(X_{new})$, that contains some of the cell types present in 
 the reference data.
@@ -51,7 +51,7 @@ $C(X_{new})$ satisfies $P(Y_{new} \in C(X_{new})) \geq 1-\alpha$, where
 $\alpha$ is a user-chosen error level.
 
 2. The second method is based on conformal risk control 
-([Angelopoulus et al., 2023](https://arxiv.org/abs/2208.02814)). It considers
+(angelopoulos2025conformalriskcontrol). It considers
 the inherent relationships among cell types that are encoded as 
 graph-structured constraints available through the cell ontology. 
 The final output is a prediction set aligned with the
@@ -59,22 +59,18 @@ cell ontology structure. Specifically, the prediction set will include all the
 children of an ancestor of the predicted class. The more unsure the point 
 prediction, the broader the classification. Also this method satisfies 
 $P(Y_{new} \in C(X_{new})) \geq 1-\alpha$. More details are 
-available at [Corbetta et al., 2026+](https://arxiv.org/abs/2410.23786).
+available at @corbetta2025conformal.
 
 
 # Installation
 
 To install it
 ```{r inst, eval=FALSE}
-if (BiocManager::version() >= "3.23") {
-    BiocManager::install("scConform")
-} else {
-    spdl::info(
-        "'scConform' requires Bioconductor version 3.23 or later, ",
-        "installing development version from Github"
-    )
-    devtools::install_github("ccb-hms/scConform")
-}
+## install if needed
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("scConform")
 ```
 
 
@@ -430,9 +426,8 @@ In words, we start from the predicted class and we go up in the graph until we
 find an ancestor of $\hat{y}(x)$ that has a score that is at least $\lambda$
 and include in the prediction sets all its children. Then we add to this 
 subgraph the other ones that contain $\hat{y}(x)$ for which the score is less 
-than $\lambda$. To choose $\lambda$, we follow eq. (4) in 
-[Angelopoulus et al., 2023](https://arxiv.org/abs/2208.02814), considering the miscoverage as loss function.
-See [Corbetta et al., 2026+](https://arxiv.org/abs/2410.23786) for more details 
+than $\lambda$. To choose $\lambda$, we follow eq. (4) in @angelopoulos2025conformalriskcontrol, considering the miscoverage as loss function.
+See @corbetta2025conformal for more details 
 on the algorithm and a discussion on the rationale of the method.
 
 ## Obtain hierarchical prediction sets

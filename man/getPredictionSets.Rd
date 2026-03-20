@@ -22,50 +22,59 @@ getPredictionSets(
 )
 }
 \arguments{
-\item{x_query}{query data for which we want to build prediction sets. Could
-be either a SingleCellExperiment object with the estimated probabilities for
-each cell type in the colData, or a named matrix of dimension \code{n x K},
+\item{x_query}{query data for which we want to build prediction sets. This can
+be either a \code{SingleCellExperiment} (or \code{SpatialExperiment}) object with the
+estimated probabilities for
+each cell type in the \code{colData}, or a named numeric matrix
+with \code{n} rows and \code{K} columns,
 where \code{n} is the number of cells and \code{K} is the number of different
 labels. The colnames of the matrix have to correspond to the cell labels.}
 
-\item{x_cal}{calibration data. Could be either a
-SingleCellExperiment object with the estimated probabilities for each cell
-type in the colData, or a named matrix of dimension \code{m x K}, where
+\item{x_cal}{calibration data. This can be either a
+\code{SingleCellExperiment} object with the estimated probabilities for each cell
+type in the \code{colData}, or a named matrix of dimension \verb{m x K}, where
 \code{m} is the number of cells and \code{K} is the number of different
 labels. The colnames of the matrix have to correspond to the cell labels.}
 
 \item{y_cal}{a vector of length \code{m} with the true labels of the cells in
 the calibration data.}
 
-\item{onto}{the considered section of the cell ontology as an igraph object.}
+\item{onto}{An \code{igraph} object representing the considered section of the
+cell ontology.}
 
-\item{alpha}{a number between 0 and 1 that indicates the allowed miscoverage}
+\item{alpha}{Numeric value between 0 and 1 that indicates the allowed
+miscoverage}
 
-\item{lambdas}{a vector of possible lambda values to be considered. Necessary
-only when \code{follow_ontology=TRUE}.}
+\item{lambdas}{a numeric vector of possible lambda values to be considered.
+Necessary only when \code{follow_ontology=TRUE}.}
 
-\item{follow_ontology}{If \code{TRUE}, then the function returns hierarchical
+\item{follow_ontology}{Logical. If \code{TRUE}, then the function returns
+hierarchical
 prediction sets that follow the cell ontology structure. If \code{FALSE}, it
-returns classical conformal prediction sets. See details.}
+returns classical conformal prediction sets. See Details.}
 
-\item{resample}{Should the calibration dataset be resampled according to
-the estimated relative frequencies of cell types in the query data?}
+\item{resample}{Logical. If \code{TRUE}, the calibration dataset is resampled
+according to the estimated relative frequencies of cell types in the query
+data.}
 
-\item{labels}{labels of different considered cell types. Necessary if
+\item{labels}{Character vector of labels of different considered cell types.
+Necessary if
 \code{onto=NULL}, otherwise they are set equal to the leaf nodes of the
 provided graph.}
 
-\item{return_sc}{parameter the controls the output. If \code{TRUE}, the
-function returns a SingleCellExperiment.
+\item{return_sc}{Logical. Parameter the controls the output type. If
+\code{TRUE}, the function returns a \code{SingleCellExperiment}.
 If \code{FALSE}, the function returns a list. By default,
-it is set to \code{TRUE} when \code{x_query} is a SingleCellExperiment or
-SpatialExperiment object and to \code{FALSE} when \code{x_query} is a matrix.}
+it is set to \code{TRUE} when \code{x_query} is a \code{SingleCellExperiment} (or
+\code{SpatialExperiment}) object and to \code{FALSE} when \code{x_query} is a matrix.}
 
-\item{pr_name}{name of the colData variable in the returned
-SingleCellExperiment object that will contain the prediction
+\item{pr_name}{Character string giving the name of the \code{colData} variable
+in the returned
+\code{SingleCellExperiment} object that will contain the prediction
 sets. The default name is \code{pred.set}.}
 
-\item{simplify}{if \code{TRUE}, the output will be the common ancestor
+\item{simplify}{Logical. If \code{TRUE}, the output will be the common
+ancestor
 of the labels inserted into the prediction set. If \code{FALSE} (default),
 the output will be the set of the leaf labels.}
 
@@ -73,38 +82,39 @@ the output will be the set of the leaf labels.}
 prediction sets are constructed when \code{follow_ontology=TRUE}.
 If a character string, it must be one of:
 \describe{
-  \item{\code{"full"}}{the default hierarchical construction described in the
-  Details section, which guarantees non-empty prediction sets;}
-  \item{\code{"step"}}{a construction that includes all ancestors up to a
-  fixed number of steps above the predicted class;}
-  \item{\code{"rank"}}{a construction that ranks leaf nodes by predicted
-  probability, accumulates probability until a threshold is reached, and
-  then expands the lowest common ancestor of the selected leaves.}
+\item{\code{"full"}}{the default hierarchical construction described in the
+Details section, which guarantees non-empty prediction sets;}
+\item{\code{"step"}}{a construction that includes all ancestors up to a
+fixed number of steps above the predicted class;}
+\item{\code{"rank"}}{a construction that ranks leaf nodes by predicted
+probability, accumulates probability until a threshold is reached, and
+then expands the lowest common ancestor of the selected leaves.}
 }
 Alternatively, \code{method} can be a user-defined function with signature
-\code{function(lambda, pred, onto)}, returning a character vector of leaf
+\verb{function(lambda, pred, onto)}, returning a character vector of leaf
 labels defining the prediction set.}
 
 \item{BPPARAM}{BiocParallel instance for parallel computing. Default is
 \code{SerialParam()}.}
 }
 \value{
-\item{\code{return_sc = TRUE}}{the function \code{getPredictionSets} returns
-a SingleCellExperiment or SpatialExperiment
-object with the prediction sets in the colData. The name of the variable
-containing the prediction sets is given by the parameter \code{pr_name}}
-\item{\code{return_sc = FALSE}}{the function \code{getPredictionSets} returns
-a list of length equal
-to the number of cells in the test data. Each element of the list contains
-the prediction set for that cell.}
+\describe{
+\item{If \code{return_sc = TRUE}:}{A \code{SingleCellExperiment} or
+\code{SpatialExperiment} object with the prediction sets stored in the
+\code{colData}. The name of the corresponding variable is given by \code{pr_name}.}
+\item{If \code{return_sc = FALSE}:}{A list of length equal to the number of
+cells in the query data. Each element contains the prediction set for one
+cell.}
+}
 }
 \description{
-This function returns prediction sets for the cell
-type of cells in a SingleCellExperiment objects.
-It implements two methods: the first one uses standard conformal inference,
-while the second one conformal risk control (see details). The output is
-either a SingleCellExperiment object with the prediction sets in the colData
-or a list.
+This function returns conformal prediction sets for the cell
+type of cells in a query dataset. It implements two methods: standard split
+conformal inference and a hierarchical conformal risk-control approach that
+incorporates the cell ontology structure. Depending on the input and on the
+value of \code{return_sc}, the output is either a list of prediction sets or a
+\code{SingleCellExperiment}/\code{SpatialExperiment} object with prediction sets stored
+in the \code{colData}.
 }
 \details{
 \subsection{Split conformal sets}{Conformal inference is a statistical
@@ -124,17 +134,17 @@ distribution-free and the sets provided have finite-samples validity.
 The only assumption is that the test data and the calibration data are
 exchangeable. The algorithm of split conformal inference is the following:
 \enumerate{
-  \item For the data in the calibration set, \eqn{(X_1,Y_1),\dots, (X_n,Y_n)}
-  , obtain the \emph{conformal scores}, \eqn{s_i=1-\hat{f}(X_i)_{Y_i},
+\item For the data in the calibration set, \eqn{(X_1,Y_1),\dots, (X_n,Y_n)}
+, obtain the \emph{conformal scores}, \eqn{s_i=1-\hat{f}(X_i)_{Y_i},
   \;i=1,\dots,n}. These scores will be high when the model is assigning a
-  small probability to the true class, and low otherwise.
-  \item Obtain \eqn{\hat{q}}, the
-  \eqn{\lceil(1-\alpha)(n+1)\rceil/n} empirical quantile of the conformal
-  scores.
-  \item Finally, for a new observation \eqn{X_{n+1}}, construct a prediction
-  set by including all the classes for which the estimated probability is
-  higher than \eqn{1-\hat{q}}:
-  \deqn{C(X_{n+1})=\{y: \hat{f}(X_{n+1})_y\geq 1-\hat{q}\}.}
+small probability to the true class, and low otherwise.
+\item Obtain \eqn{\hat{q}}, the
+\eqn{\lceil(1-\alpha)(n+1)\rceil/n} empirical quantile of the conformal
+scores.
+\item Finally, for a new observation \eqn{X_{n+1}}, construct a prediction
+set by including all the classes for which the estimated probability is
+higher than \eqn{1-\hat{q}}:
+\deqn{C(X_{n+1})=\{y: \hat{f}(X_{n+1})_y\geq 1-\hat{q}\}.}
 }}
 \subsection{Hierarchical conformal sets}{
 Let \eqn{\hat{y}(x)} be the class with maximum estimated probability.
@@ -152,7 +162,7 @@ we find an ancestor of \eqn{\hat{y}(x)} that has a score that is at least
 \eqn{\lambda} and include in the prediction sets all its children.
 For theoretical reasons, to this subgraph we add all the other
 ones that contain \eqn{\hat{y}(x)} for which the score is less than
-\eqn{\lambda}. To choose \eqn{\lambda}, we follow eq. (4) in Angelopoulus et
+\eqn{\lambda}. To choose \eqn{\lambda}, we follow eq. (4) in Angelopoulos et
 al. (2023), considering the miscoverage as loss function. In this way, it is
 still guaranteed that
 \deqn{P(Y_{n+1}\notin C_\lambda (X_{n+1})) \leq \alpha.}
@@ -196,15 +206,13 @@ conf_sets <- getPredictionSets(
 
 }
 \references{
-For more details
-on the algorithm and a discussion on the rationale of the method,
-see Corbetta et al., "Conformal inference for cell type annotation with
-graph-structured constraints.", arXiv preprint 	arXiv:2410.23786 (2025).
-For an introduction to conformal prediction, see
-Angelopoulos, Anastasios N., and Stephen Bates. "A gentle introduction to
-conformal prediction and distribution-free uncertainty quantification."
-arXiv preprint arXiv:2107.07511 (2021).
-For reference on conformal risk control, see
-Angelopoulos, Anastasios N., et al. "Conformal risk control."
-arXiv preprint arXiv:2208.02814 (2023).
+Corbetta, D. et al. \emph{Conformal inference for cell type annotation with
+graph-structured constraints}. arXiv preprint arXiv:2410.23786.
+
+Angelopoulos, A. N. and Bates, S. \emph{A gentle introduction to conformal
+prediction and distribution-free uncertainty quantification}. arXiv preprint
+arXiv:2107.07511.
+
+Angelopoulos, A. N. et al. \emph{Conformal risk control}. arXiv preprint
+arXiv:2208.02814.
 }

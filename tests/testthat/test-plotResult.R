@@ -3,6 +3,8 @@ test_that("plotResult runs (suppressing possible graphviz warnings)", {
 
     onto <- make_toy_onto()
 
+    pdf(NULL)
+
     expect_silent(
         suppressWarnings(
             plotResult(
@@ -26,6 +28,8 @@ test_that("plotResult with probs and add_scores runs (suppressing possible graph
     probs["golden"] <- 0.7
     probs["labrador"] <- 0.2
     probs["cocker"] <- 0.1
+
+    pdf(NULL)
 
     expect_silent(
         suppressWarnings(
