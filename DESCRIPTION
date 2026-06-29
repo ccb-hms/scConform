@@ -9,6 +9,7 @@ Authors@R: c(
                   comment=c(ORCID="0009-0008-5026-8271")),
                   person("Tram", "Nguyen", role = "ctb"),
                   person("Nitesh", "Turaga", role = "ctb"),
+                  person("Matteo", "Calgaro", role = "ctb"),
                   person("Ludwig", "Geistlinger", role = "ctb")
            )
 Description: Builds prediction interval for cell type annotation using conformal 
@@ -40,7 +41,6 @@ Imports:
     BiocParallel,
     Rgraphviz
 VignetteBuilder: knitr
-RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 Encoding: UTF-8
 biocViews: 
@@ -51,3 +51,4 @@ biocViews:
 URL: https://github.com/ccb-hms/scConform
 BugReports: https://github.com/ccb-hms/scConform/issues
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0
