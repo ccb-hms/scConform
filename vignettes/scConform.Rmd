@@ -475,9 +475,12 @@ Alternatively, we can convert the obtained prediction sets invoking
 the function `getCommonAncestor`.
 
 ```{r common-ancestor}
+# Precompute ontology information to speed up the computation
+opi2_cache <- precomputeOnto(opi2)
+# Add a new variable to the colData with the common ancestor for each prediction set
 spe_query$pred_set_hier_simp <- vapply(
     spe_query$pred_set_hier,
-    function(x) getCommonAncestor(x, opi2),
+    function(x) getCommonAncestor(x, opi2, opi2_cache),
     character(1)
 )
 head(spe_query$pred_set_hier_simp)
