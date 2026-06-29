@@ -40,7 +40,7 @@
 # Angelopoulus (2023), Conformal Risk Control. Finally, builds prediction sets
 # for p_test based on the selected lambda value.
 
-.getHierarchicalPredSets <- function(p_cal, p_test, y_cal, onto, alpha,
+.getHierarchicalPredSets <- function(p_cal, p_test, y_cal, onto, onto_cache, alpha,
                                      lambdas, BPPARAM,
                                      method = "full") {
     # method <- match.arg(method)
@@ -59,17 +59,43 @@
         stop("Invalid 'method' argument")
     }
 
+    # Precompute per-cell scores for all calibration cells:
+    # For each calibration cell i and each of its ancestors a,
+    # score g(a, x_i) = sum of pred probs for leaf children of a.
+ 
+    # For calibration: for each cell, we only need ancestors of the pred class.
+    # Shape: list of length n_cal, each element a named numeric vector of scores
+    # indexed by ancestor node name.
+    # Validate that at least some ontology leaves are present in the prediction
+    # matrix columns. For method = "rank" this is required; for others it means
+    # all conformity scores will be NA and calibration will fail anyway.
+    common_leaves <- intersect(onto_cache$leaves, colnames(p_cal))
+    if (length(common_leaves) == 0L) {
+        stop("No ontology leaves are present in the column names of the ",
+             "prediction matrix. Check that the ontology and the prediction ",
+             "matrix share the same labels.")
+    }
 
-    # Get prediction sets for each value of lambda for all the calibration data
+    n_cal  <- nrow(p_cal)
+    n_test <- nrow(p_test)
+
+    cal_scores <- lapply(seq_len(n_cal), function(i) {
+        .precomputeCellScores(p_cal[i, ], onto_cache)
+    })
+
+    test_scores <- lapply(seq_len(n_test), function(i) {
+        .precomputeCellScores(p_test[i, ], onto_cache)
+    })
+
     j <- NULL
-
     sets <- bplapply(lambdas, function(j) {
-        lapply(seq_len(nrow(p_cal)), function(i) {
-            # .predSets(lambda = j, pred = p_cal[i, ], onto = onto)
+        lapply(seq_len(n_cal), function(i) {
             pred_fun(
-                lambda = j,
-                pred = p_cal[i, ],
-                onto = onto
+                lambda     = j,
+                pred       = p_cal[i, ],
+                onto       = onto,
+                onto_cache = onto_cache,
+                cell_cache = cal_scores[[i]]
             )
         })
     }, BPPARAM = BPPARAM)
@@ -88,41 +114,64 @@
     lhat <- lambdas[lhat_idx]
     message("Calibration complete. Selected lambda_hat = ", lhat)
 
-    # Get prediction sets for test data
-    sets_test <- lapply(seq_len(nrow(p_test)), function(i) {
-        pred_fun(lambda = lhat, pred = p_test[i, ], onto = onto)
+    sets_test <- lapply(seq_len(n_test), function(i) {
+        pred_fun(lambda = lhat, pred = p_test[i, ], onto = onto,
+            onto_cache = onto_cache, cell_cache = test_scores[[i]])
     })
 
     return(sets_test)
 }
 
-# Function to retrieve all ancestors of a given node, starting from an igraph
-# object. Default includes also the given node
-.ancestors <- function(node, onto, include_self = TRUE) {
-    if (include_self) {
-        return(V(onto)$name[is.finite(distances(onto, node, mode = "in"))])
-    } else {
-        return(V(onto)$name[is.finite(distances(onto, node, mode = "in")) &
-            V(onto)$name != node])
-    }
-}
-
-# Function to retrieve children of a given node, starting from an igraph object
-# By default, gives only the children that are leaves in the ontology.
-.children <- function(node, onto, leaf = TRUE) {
-    if (leaf) {
-        return(V(onto)$name[is.finite(distances(onto, node, mode = "out")) &
-            degree(onto, mode = "out") == 0])
-    } else {
-        return(V(onto)$name[is.finite(distances(onto, node, mode = "out"))])
-    }
-}
-
 # Function to compute scores of a given node in an ontology (sum of estimated
 # probabilities for the leaf nodes that are children of the given one)
-.scores <- function(pred, int_node, onto) {
-    c <- .children(node = int_node, onto = onto, leaf = TRUE)
-    return(sum(pred[c]))
+.scores <- function(pred, int_node, onto_cache) {
+    lc <- onto_cache$leaf_children[[int_node]]
+    # Only leaves present in pred vector
+    lc_present <- intersect(lc, names(pred))
+    if (length(lc_present) == 0L) {
+        return(NA_real_)
+    }
+    return(sum(pred[lc_present]))
+}
+
+# Precompute per-cell ancestor scores.
+# Returns a named list with:
+#   $pred_class : name of the predicted class
+#   $anc        : character vector of ancestor names (incl. self)
+#   $s          : named numeric vector of scores for each ancestor
+#   $tie_breaker: named numeric vector of distances to pred_class
+.precomputeCellScores <- function(pred, onto_cache) {
+    pred_class <- names(pred)[which.max(pred)]
+
+    # pred_class may not be an ontology node (labels mismatch).
+    # Return an empty cache entry; pred functions will produce empty sets.
+    anc <- onto_cache$ancestors_of[[pred_class]]
+    if (is.null(anc)) {
+        return(list(
+            pred_class  = pred_class,
+            anc         = character(0),
+            s           = numeric(0),
+            tie_breaker = numeric(0)
+        ))
+    }
+
+    # Score for each ancestor: sum of pred probs over its leaf children
+    s <- vapply(anc, function(a) {
+        .scores(pred, a, onto_cache)
+    }, numeric(1))
+    names(s) <- anc
+
+    # Distance from each ancestor to pred_class (for tie-breaking)
+    # dist_mat[ancestor, pred_class]: finite if ancestor can reach pred_class
+    tie_breaker <- onto_cache$dist_mat[anc, pred_class]
+    names(tie_breaker) <- anc
+
+    list(
+        pred_class   = pred_class,
+        anc          = anc,
+        s            = s,
+        tie_breaker  = tie_breaker
+    )
 }
 
 ################################
@@ -130,113 +179,68 @@
 ################################
 
 # Function to get prediction sets following the ontology (full version)
-.predSets <- function(lambda, pred, onto) {
-    # Get the predicted class and its ancestors
-    pred_class <- names(pred)[which.max(pred)]
-    anc <- .ancestors(node = pred_class, onto = onto, include_self = TRUE)
-
-    # Compute scores for all the ancestor of the predicted class
-    s <- vapply(as.character(anc), function(i) {
-        .scores(
-            pred = pred, int_node = i,
-            onto = onto
-        )
-    }, numeric(1))
-    names(s) <- anc
-
-    ## Sort them by score and if there are ties by distance to the predicted
-    ## class
-    ## compute distance from predicted class
-    pos <- distances(onto, v = anc, to = pred_class, mode = "out")
-    tie_breaker <- as.vector(t(pos))
-    names(tie_breaker) <- colnames(t(pos))
+.predSets <- function(lambda, pred, onto, onto_cache = NULL, cell_cache = NULL) {
+    pred_class  <- cell_cache$pred_class
+    anc         <- cell_cache$anc
+    s           <- cell_cache$s
+    tie_breaker <- cell_cache$tie_breaker
     sorted_indices <- order(s, tie_breaker, decreasing = FALSE)
-    sorted_scores <- s[sorted_indices]
+    sorted_scores  <- s[sorted_indices]
 
-    # Select the first score that is geq than lambda
     sel_node <- names(sorted_scores)[round(sorted_scores, 15) >= lambda][1]
 
-
-    # Add also the subgraphs we would have obtained with smaller lambda
     selected <- c(
         lapply(anc[round(s, 15) < lambda], function(x) {
-            .children(node = x, onto = onto)
+            onto_cache$leaf_children[[x]]
         }),
-        list(.children(sel_node, onto))
+        list(onto_cache$leaf_children[[sel_node]])
     )
-
     return(Reduce(union, selected))
 }
 
 # Reduced (simple) hierarchical prediction sets (reduced version, no union
 # with L(v))
-.predSetsSimple <- function(lambda, pred, onto) {
-    # Predicted class and its ancestors
-    pred_class <- names(pred)[which.max(pred)]
-    anc <- .ancestors(node = pred_class, onto = onto, include_self = TRUE)
-
-    # Compute scores g(a, x)
-    s <- vapply(as.character(anc), function(i) {
-        .scores(
-            pred = pred,
-            int_node = i,
-            onto = onto
-        )
-    }, numeric(1))
-    names(s) <- anc
-
+.predSetsSimple <- function(lambda, pred, onto, onto_cache = NULL, cell_cache = NULL) {
+    anc <- cell_cache$anc
+    s   <- cell_cache$s
+    
     # Thresholded ancestors (exclude NA scores)
     selected <- lapply(
         anc[!is.na(s) & round(s, 10) <= lambda],
-        function(x) {
-            .children(node = x, onto = onto)
-        }
+        function(x) onto_cache$leaf_children[[x]]
     )
-
-    # If empty, fall back to the predicted class
-    # if (length(selected) == 0) {
-    #   return(.children(node = pred_class, onto = onto))
-    # }
-
-    Reduce(union, selected)
+    
+    return(Reduce(union, selected))
 }
 
 # Nested sets by number of steps up the DAG (k = lambda)
-.predSetsStep <- function(lambda, pred, onto) {
-    pred_class <- names(pred)[which.max(pred)]
+.predSetsStep <- function(lambda, pred, onto, onto_cache = NULL, cell_cache = NULL) {
     k <- as.integer(lambda)
-
-    if (is.na(k) || k < 0) {
+    if (is.na(k) || k < 0){
         stop("For method = 'step', lambda must be a non-negative integer.")
     }
 
-    # All ancestors (including itself)
-    anc <- .ancestors(node = pred_class, onto = onto, include_self = TRUE)
-
-    # Distance from pred_class up to each ancestor (mode = 'in' goes upward)
-    d <- distances(onto, v = pred_class, to = anc, mode = "in")
-    d <- as.numeric(d[1, ])
-    names(d) <- anc
-
-    anc_keep <- names(d)[is.finite(d) & d <= k]
-
+    pred_class  <- cell_cache$pred_class
+    anc         <- cell_cache$anc
+    tie_breaker <- cell_cache$tie_breaker   # dist from anc to pred_class
+    anc_keep    <- anc[is.finite(tie_breaker) & tie_breaker <= k]
     # Union of leaves of kept ancestors
-    selected <- lapply(anc_keep, function(a) .children(node = a, onto = onto))
+    selected    <- lapply(anc_keep, function(a) onto_cache$leaf_children[[a]])
     if (length(selected) == 0) {
         return(character(0))
     }
-    Reduce(union, selected)
+    return(Reduce(union, selected))
 }
 
 # Prediction sets by probability ranking + LCA
-.predSetsRank <- function(lambda, pred, onto) {
+.predSetsRank <- function(lambda, pred, onto, onto_cache = NULL, cell_cache = NULL) {
     # lambda is a cumulative probability threshold in [0, 1]
     if (is.na(lambda) || lambda < 0 || lambda > 1) {
         stop("For method = 'rank', lambda must be in [0, 1].")
     }
 
     # Ontology leaves
-    leaves <- V(onto)$name[degree(onto, mode = "out") == 0]
+    leaves <- onto_cache$leaves
 
     # Keep only leaves present in prediction vector
     leaves <- intersect(leaves, names(pred))
@@ -267,10 +271,10 @@
     selected_leaves <- leaves_ord[seq_len(m)]
 
     # Lowest common ancestor of selected leaves
-    lca <- getCommonAncestor(selected_leaves, onto)
+    lca <- getCommonAncestor(selected_leaves, onto, onto_cache = onto_cache)
 
     # Return all leaves under the LCA
-    .children(node = lca, onto = onto)
+    return(onto_cache$leaf_children[[lca]])
 }
 
 
