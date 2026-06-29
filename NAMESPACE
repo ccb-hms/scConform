@@ -3,6 +3,7 @@
 export(getCommonAncestor)
 export(getPredictionSets)
 export(plotResult)
+export(precomputeOnto)
 importFrom(BiocParallel,SerialParam)
 importFrom(BiocParallel,bplapply)
 importFrom(Rgraphviz,plot)
