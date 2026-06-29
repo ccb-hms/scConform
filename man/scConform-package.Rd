@@ -57,10 +57,16 @@ Useful links:
 \author{
 \strong{Maintainer}: Daniela Corbetta \email{daniela.corbetta@unipd.it} (\href{https://orcid.org/0009-0008-5026-8271}{ORCID})
 
+Authors:
+\itemize{
+  \item Daniela Corbetta \email{daniela.corbetta@unipd.it} (\href{https://orcid.org/0009-0008-5026-8271}{ORCID})
+}
+
 Other contributors:
 \itemize{
   \item Tram Nguyen [contributor]
   \item Nitesh Turaga [contributor]
+  \item Matteo Calgaro [contributor]
   \item Ludwig Geistlinger [contributor]
 }
 
