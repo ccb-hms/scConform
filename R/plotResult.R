@@ -4,6 +4,8 @@
 #'
 #' @param pred_set character vector containing the labels in the prediction set
 #' @param onto an `igraph` object representing the ontology
+#' @param onto_cache optional precomputed cache from `precomputeOnto()`. If `NULL`, 
+#' the cache is computed automatically (and discarded after the call).
 #' @param probs numeric vector of estimated probabilities for the classes. The
 #'   names of `probs` should correspond to node names in `onto`
 #' @param col_grad character vector of colors used to highlight the classes. If
@@ -41,6 +43,7 @@
 plotResult <- function(
     pred_set,
     onto,
+    onto_cache = NULL,
     probs = NULL,
     col_grad = c("lemonchiffon", "orange", "darkred"),
     attrs = NULL,
@@ -50,6 +53,10 @@ plotResult <- function(
     ...) {
   if (add_scores && is.null(probs)) {
     stop("'probs' must be provided when 'add_scores = TRUE'.")
+  }
+  if (is.null(onto_cache)) {
+    message("Building ontology cache...")
+    onto_cache <- precomputeOnto(onto)
   }
 
   graph <- as_graphnel(onto)
@@ -74,12 +81,12 @@ plotResult <- function(
   nAttrs <- list(fillcolor = vec_col)
 
   if (add_scores) {
-    node_names <- V(onto)$name
+    node_names <- onto_cache$node_names
     scores <- round(vapply(
       node_names,
-      function(x) .scores(probs, x, onto),
+      function(x) .scores(probs, x, onto_cache),
       numeric(1)
-    ), 3)
+    ), 3) 
 
     labels <- paste(node_names, scores, sep = ", ")
     names(labels) <- node_names

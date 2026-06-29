@@ -7,6 +7,7 @@
 plotResult(
   pred_set,
   onto,
+  onto_cache = NULL,
   probs = NULL,
   col_grad = c("lemonchiffon", "orange", "darkred"),
   attrs = NULL,
@@ -20,6 +21,9 @@ plotResult(
 \item{pred_set}{character vector containing the labels in the prediction set}
 
 \item{onto}{an \code{igraph} object representing the ontology}
+
+\item{onto_cache}{optional precomputed cache from \code{precomputeOnto()}. If \code{NULL},
+the cache is computed automatically (and discarded after the call).}
 
 \item{probs}{numeric vector of estimated probabilities for the classes. The
 names of \code{probs} should correspond to node names in \code{onto}}

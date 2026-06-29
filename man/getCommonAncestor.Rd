@@ -4,13 +4,16 @@
 \alias{getCommonAncestor}
 \title{Return the common ancestor of the labels in the prediction set}
 \usage{
-getCommonAncestor(pred_set, onto)
+getCommonAncestor(pred_set, onto, onto_cache = NULL)
 }
 \arguments{
 \item{pred_set}{character vector of labels included in the prediction set.
 These labels should correspond to node names in \code{onto}.}
 
 \item{onto}{an \code{igraph} object representing the ontology.}
+
+\item{onto_cache}{optional precomputed cache from \code{precomputeOnto()}. If \code{NULL},
+the cache is computed automatically (and discarded after the call).}
 }
 \value{
 A character string corresponding to the most specific common ancestor

@@ -23,6 +23,9 @@
 #' the calibration data.
 #' @param onto An `igraph` object representing the considered section of the
 #' cell ontology.
+#' @param onto_cache Optional precomputed ontology cache from
+#' `precomputeOnto(onto)`. If `NULL`, the cache is
+#' computed automatically (and discarded after the call).
 #' @param alpha Numeric value between 0 and 1 that indicates the allowed
 #' miscoverage
 #' @param lambdas a numeric vector of possible lambda values to be considered.
@@ -185,6 +188,7 @@ getPredictionSets <- function(
         x_cal,
         y_cal,
         onto = NULL,
+        onto_cache = NULL,
         alpha = 0.1,
         lambdas = seq(0.001, 0.999, length.out = 100),
         follow_ontology = TRUE,
@@ -264,11 +268,17 @@ getPredictionSets <- function(
         p_cal <- x_cal
     }
 
+    ## Build onto_cache once if needed for hierarchical inference
+    if (follow_ontology && is.null(onto_cache)) {
+        message("Building ontology cache...")
+        onto_cache <- precomputeOnto(onto)
+    }
+
     if (!resample) {
         if (follow_ontology) {
             pred_sets <- .getHierarchicalPredSets(
                 p_cal = p_cal, p_test = p_query,
-                y_cal = y_cal, onto = onto,
+                y_cal = y_cal, onto = onto, onto_cache = onto_cache,
                 alpha = alpha,
                 lambdas = lambdas,
                 BPPARAM = BPPARAM,
@@ -293,6 +303,7 @@ getPredictionSets <- function(
                 p_test = data$p_test1,
                 y_cal = data$y_cal2,
                 onto = onto,
+                onto_cache = onto_cache,
                 alpha = alpha,
                 lambdas = lambdas,
                 BPPARAM = BPPARAM,
@@ -303,6 +314,7 @@ getPredictionSets <- function(
                 p_test = data$p_test2,
                 y_cal = data$y_cal1,
                 onto = onto,
+                onto_cache = onto_cache,
                 alpha = alpha,
                 lambdas = lambdas,
                 BPPARAM = BPPARAM,
@@ -333,15 +345,15 @@ getPredictionSets <- function(
     if (simplify) {
         pred_sets1 <- vapply(
             pred_sets,
-            function(x) getCommonAncestor(x, onto),
+            function(x) getCommonAncestor(x, onto, onto_cache = onto_cache),
             character(1)
         )
         ## Check for ramification. If there is a ramification in the ontology
         ## and the children of the common ancestor include also labels not
         ## in the prediction set, don't return the common ancestor
         for (i in seq_len(length(pred_sets1))) {
-            if (length(.children(pred_sets1[[i]], onto)) ==
-                length(pred_sets[[i]])) {
+            children_of_anc <- onto_cache$leaf_children[[pred_sets1[[i]]]]
+            if (length(children_of_anc) == length(pred_sets[[i]])) {
                 pred_sets[[i]] <- pred_sets1[[i]]
             }
         }
