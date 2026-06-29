@@ -9,6 +9,7 @@ getPredictionSets(
   x_cal,
   y_cal,
   onto = NULL,
+  onto_cache = NULL,
   alpha = 0.1,
   lambdas = seq(0.001, 0.999, length.out = 100),
   follow_ontology = TRUE,
@@ -41,6 +42,10 @@ the calibration data.}
 
 \item{onto}{An \code{igraph} object representing the considered section of the
 cell ontology.}
+
+\item{onto_cache}{Optional precomputed ontology cache from
+\code{precomputeOnto(onto)}. If \code{NULL}, the cache is
+computed automatically (and discarded after the call).}
 
 \item{alpha}{Numeric value between 0 and 1 that indicates the allowed
 miscoverage}
