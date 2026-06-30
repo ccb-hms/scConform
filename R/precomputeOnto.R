@@ -26,6 +26,9 @@
 #' @export
 precomputeOnto <- function(onto) {
     node_names <- V(onto)$name
+    if (is.null(node_names) || length(node_names) == 0L || anyNA(node_names) || anyDuplicated(node_names)) {
+        stop("Ontology vertices must have unique, non-missing names in V(onto)$name.")
+    }
 
     # Full pairwise distance matrix (nNodes x nNodes)
     # dist_mat[i, j] = distance from node i to node j
@@ -38,7 +41,11 @@ precomputeOnto <- function(onto) {
     in_deg  <- degree(onto, mode = "in")
 
     leaves <- node_names[out_deg == 0]
-    root   <- node_names[in_deg  == 0]
+    root_nodes <- node_names[in_deg == 0]
+     if (length(root_nodes) != 1L) {
+         stop("Ontology must have exactly one root node (in-degree 0). Found: ", length(root_nodes))
+     }
+     root <- root_nodes[[1]]
 
     # For each node: which leaves are reachable (descendants that are leaves)?
     # dist_mat[node, leaf] is finite  <=>  leaf is reachable from node
