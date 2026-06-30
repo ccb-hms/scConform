@@ -26,9 +26,19 @@
 
 # Function to return the common ancestor instead of the single leaf nodes
 getCommonAncestor <- function(pred_set, onto, onto_cache = NULL) {
+    # Check if the prediction set is empty
+    if (length(pred_set) == 0) {
+        stop("Prediction set is empty. Cannot compute common ancestor.")
+    }
     if(is.null(onto_cache)) {
         message("Building ontology cache...")
         onto_cache <- precomputeOnto(onto)
+    }
+    # Check if all labels in the prediction set are present in the ontology
+    if (!all(pred_set %in% onto_cache$node_names)) {
+        missing_labels <- pred_set[!pred_set %in% onto_cache$node_names]
+        stop("The following labels in the prediction set are not present in the ontology: ", 
+             paste(missing_labels, collapse = ", "))
     }
     com_anc <- Reduce(intersect, lapply(pred_set, function(node) {
         onto_cache$ancestors_of[[node]]
