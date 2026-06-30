@@ -90,13 +90,10 @@
     j <- NULL
     sets <- bplapply(lambdas, function(j) {
         lapply(seq_len(n_cal), function(i) {
-            pred_fun(
-                lambda     = j,
-                pred       = p_cal[i, ],
-                onto       = onto,
-                onto_cache = onto_cache,
-                cell_cache = cal_scores[[i]]
-            )
+            args <- list(lambda = j, pred = p_cal[i, ], onto = onto)
+            if ("onto_cache" %in% names(formals(pred_fun))) args$onto_cache <- onto_cache
+            if ("cell_cache" %in% names(formals(pred_fun))) args$cell_cache <- cal_scores[[i]]
+            do.call(pred_fun, args)
         })
     }, BPPARAM = BPPARAM)
 
@@ -115,8 +112,10 @@
     message("Calibration complete. Selected lambda_hat = ", lhat)
 
     sets_test <- lapply(seq_len(n_test), function(i) {
-        pred_fun(lambda = lhat, pred = p_test[i, ], onto = onto,
-            onto_cache = onto_cache, cell_cache = test_scores[[i]])
+        args <- list(lambda = lhat, pred = p_test[i, ], onto = onto)
+        if ("onto_cache" %in% names(formals(pred_fun))) args$onto_cache <- onto_cache
+        if ("cell_cache" %in% names(formals(pred_fun))) args$cell_cache <- test_scores[[i]]
+        do.call(pred_fun, args)
     })
 
     return(sets_test)
